@@ -25,7 +25,7 @@ SECRET_KEY = 'u05$6o%8hk%bq_4q0_xb&m944g-spl0#wz*r$ipz_g@5i=flim'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'othello2',
 ]
 
 MIDDLEWARE = [

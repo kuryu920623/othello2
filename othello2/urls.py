@@ -15,8 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from . import views
 
 urlpatterns = [
-    # path('admin/', admin.site.urls),
-    path('othello2/', include('othello2.urls'))
+    path('cp_turn', views.cp_turn)
 ]
