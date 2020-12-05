@@ -1,20 +1,26 @@
 from django.http import HttpResponse
 from operator import mul
 
+# 盤面情報からPCが置いた後の盤面情報と次に置ける位置を返却
 def pc_turn(request):
+    b = Board()
+    b.get_putable_bit(1)
     return HttpResponse('html')
 
+# 盤面情報と手動で置いた位置から、置いた後の盤面情報を返却
 def manual_turn(request):
     return HttpResponse('html')
+
+# デバッグ用
+def print_bit(bit):
+    tmp = format(bit, 'b').zfill(64)
+    for i in range(8):
+        print(tmp[i*8:i*8+8])
+    print()
 
 # 黒=1, 白=2
 
 class Board(object):
-    # 盤面のbit(blackとwhite)
-    def __init__(self, black, white):
-        self.black = black or 0x0000000810000000
-        self.white = white or 0x0000001008000000
-
     # bitのビット数をカウントする。
     @classmethod
     def count_bit(bit):
@@ -26,9 +32,69 @@ class Board(object):
         ret = (tmp & 0x00000000ffffffff) + (tmp >> 32 & 0x00000000ffffffff)
         return ret
 
+    @classmethod
+    def board_to_bit(board_2d):
+        return 0x0000000810000000, 0x0000001008000000
+
+    @classmethod
+    def bit_to_board(self, black, white):
+        return [[0] * 8] * 8
+
+    # 盤面のbit(blackとwhite)
+    def __init__(self, black=None, white=None):
+        self.black = black or 0x0000000810000000
+        self.white = white or 0x0000001008000000
+
     # color が置ける位置のbitを取得
     def get_putable_bit(self, color):
-        return 0x0000000810000000
+        legal_borad = 0x0000000000000000
+        blank_bit = ~(self.black | self.white)
+
+        my_bit = self.black
+        opp_bit = self.white
+
+        horizontal_watch = opp_bit & 0x7e7e7e7e7e7e7e7e
+        vertical_watch = opp_bit & 0x00ffffffffffff00
+        diagonal_watch = opp_bit & 0x007e7e7e7e7e7e00
+
+        tmp = horizontal_watch & (my_bit << 1)
+        for _ in range(5):
+            tmp = tmp | (horizontal_watch & (tmp << 1))
+        legal_borad = legal_borad | (blank_bit & (tmp << 1))
+        tmp = horizontal_watch & (my_bit >> 1)
+        for _ in range(5):
+            tmp = tmp | (horizontal_watch & (tmp >> 1))
+        legal_borad = legal_borad | (blank_bit & (tmp >> 1))
+
+        tmp = vertical_watch & (my_bit >> 8)
+        for _ in range(5):
+            tmp = tmp | (vertical_watch & (tmp >> 8))
+        legal_borad = legal_borad | (blank_bit & (tmp >> 8))
+        tmp = vertical_watch & (my_bit << 8)
+        for _ in range(5):
+            tmp = tmp | (vertical_watch & (tmp << 8))
+        legal_borad = legal_borad | (blank_bit & (tmp << 8))
+
+        tmp = diagonal_watch & (my_bit >> 7)
+        for _ in range(5):
+            tmp = tmp | (diagonal_watch & (tmp >> 7))
+        legal_borad = legal_borad | (blank_bit & (tmp >> 7))
+        tmp = diagonal_watch & (my_bit << 7)
+        for _ in range(5):
+            tmp = tmp | (diagonal_watch & (tmp << 7))
+        legal_borad = legal_borad | (blank_bit & (tmp << 7))
+
+        tmp = diagonal_watch & (my_bit >> 9)
+        for _ in range(5):
+            tmp = tmp | (diagonal_watch & (tmp >> 9))
+        legal_borad = legal_borad | (blank_bit & (tmp >> 9))
+        tmp = diagonal_watch & (my_bit << 9)
+        for _ in range(5):
+            tmp = tmp | (diagonal_watch & (tmp << 9))
+        legal_borad = legal_borad | (blank_bit & (tmp << 9))
+
+        print_bit(legal_borad)
+        return legal_borad
 
     # color が置ける位置の数を取得
     def get_putable_count(self, color):
@@ -44,11 +110,6 @@ class Board(object):
     # bitの位置に color を置いた場合の Board オブジェクトを返却
     def put_stone(self, bit, color):
         return Board(self.black, self.white)
-
-    # bitをボードの2次元配列に変換する。
-    def bit_to_board(self):
-        return [[0] * 8] * 8
-
 
 class PlayerCharacter(object):
     def __init__(self, color, borad_scores=None, weingts=[1, 1, 1]):
