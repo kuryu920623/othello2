@@ -36,8 +36,7 @@ class Board(object):
     def board_to_bit(board_2d):
         return 0x0000000810000000, 0x0000001008000000
 
-    @classmethod
-    def bit_to_board(self, black, white):
+    def bit_to_board(self):
         return [[0] * 8] * 8
 
     def get_bit(self, color):
@@ -76,7 +75,6 @@ class Board(object):
         legal_borad = update_legal_borad(legal_borad, diagonal_watch, 7) # 左下から右上
         legal_borad = update_legal_borad(legal_borad, diagonal_watch, 9) # 右下から左上
 
-        print_bit(legal_borad)
         return legal_borad
 
     # color が置ける位置の数を取得
@@ -102,16 +100,16 @@ class Board(object):
             my_bit_mask = my_bit & mask
             opp_bit_mask = opp_bit & mask
             for _ in range(6):
-                move_tmp1 |= (m >> offset) & opp_bit
-                move_tmp2 |= (m << offset) & my_bit
+                move_tmp1 |= (put_bit << offset) & opp_bit_mask
+                move_tmp2 |= (put_bit >> offset) & my_bit_mask
             return move_tmp1 & move_tmp2
         def reverse_left(mask, offset):
             move_tmp1 = move_tmp2 = 0x0
             my_bit_mask = my_bit & mask
             opp_bit_mask = opp_bit & mask
             for _ in range(6):
-                move_tmp1 |= (m << offset) & opp_bit
-                move_tmp2 |= (m >> offset) & my_bit
+                move_tmp1 |= (put_bit << offset) & opp_bit_mask
+                move_tmp2 |= (put_bit >> offset) & my_bit_mask
             return move_tmp1 & move_tmp2
 
         move_all = 0x0
@@ -124,9 +122,10 @@ class Board(object):
         move_all |= reverse_right(horizontal_mask, 9)
         move_all |= reverse_left(horizontal_mask, 9)
 
-        new_black = self.black ^ move_all
-        new_white = self.white ^ move_all
-        {1: new_black, 2:new_white}[color] |= put_bit
+        new_black = (self.black ^ move_all) | (put_bit * (color % 2))
+        new_white = (self.white ^ move_all) | (put_bit * ((color + 1) % 2))
+        print_bit(new_black)
+        print_bit(new_white)
         return Board(new_black, new_white)
 
 class PlayerCharacter(object):
@@ -152,3 +151,8 @@ class PlayerCharacter(object):
     # 確定石の数の得点
     def fixed_stone_score(self, board_obj):
         return 0
+
+b = Board()
+while True:
+    li = list(map(int, input().split(',')))
+    b = b.put_stone(li[0], li[1])
