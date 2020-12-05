@@ -97,19 +97,17 @@ class Board(object):
 
         def reverse_right(mask, offset):
             move_tmp1 = move_tmp2 = 0x0
-            my_bit_mask = my_bit & mask
             opp_bit_mask = opp_bit & mask
             for _ in range(6):
-                move_tmp1 |= (put_bit << offset) & opp_bit_mask
-                move_tmp2 |= (put_bit >> offset) & my_bit_mask
+                move_tmp1 |= (put_bit >> offset) & opp_bit_mask
+                move_tmp2 |= (my_bit << offset) & opp_bit_mask
             return move_tmp1 & move_tmp2
         def reverse_left(mask, offset):
             move_tmp1 = move_tmp2 = 0x0
-            my_bit_mask = my_bit & mask
             opp_bit_mask = opp_bit & mask
             for _ in range(6):
                 move_tmp1 |= (put_bit << offset) & opp_bit_mask
-                move_tmp2 |= (put_bit >> offset) & my_bit_mask
+                move_tmp2 |= (my_bit >> offset) & opp_bit_mask
             return move_tmp1 & move_tmp2
 
         move_all = 0x0
@@ -124,8 +122,6 @@ class Board(object):
 
         new_black = (self.black ^ move_all) | (put_bit * (color % 2))
         new_white = (self.white ^ move_all) | (put_bit * (color - 1))
-        print_bit(new_black)
-        print_bit(new_white)
         return Board(new_black, new_white)
 
 class PlayerCharacter(object):
