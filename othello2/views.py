@@ -40,6 +40,9 @@ class Board(object):
     def bit_to_board(self, black, white):
         return [[0] * 8] * 8
 
+    def get_bit(self, color):
+        return {1: self.black, 2: self.white}[color]
+
     # 盤面のbit(blackとwhite)
     def __init__(self, black=None, white=None):
         self.black = black or 0x0000000810000000
@@ -50,48 +53,28 @@ class Board(object):
         legal_borad = 0x0000000000000000
         blank_bit = ~(self.black | self.white)
 
-        my_bit = self.black
-        opp_bit = self.white
+        my_bit = self.get_bit(color)
+        opp_bit = self.get_bit(color % 2 + 1)
 
         horizontal_watch = opp_bit & 0x7e7e7e7e7e7e7e7e
         vertical_watch = opp_bit & 0x00ffffffffffff00
         diagonal_watch = opp_bit & 0x007e7e7e7e7e7e00
 
-        tmp = horizontal_watch & (my_bit << 1)
-        for _ in range(5):
-            tmp = tmp | (horizontal_watch & (tmp << 1))
-        legal_borad = legal_borad | (blank_bit & (tmp << 1))
-        tmp = horizontal_watch & (my_bit >> 1)
-        for _ in range(5):
-            tmp = tmp | (horizontal_watch & (tmp >> 1))
-        legal_borad = legal_borad | (blank_bit & (tmp >> 1))
+        def update_legal_borad(legal_borad, watch, offset):
+            tmp = watch & (my_bit << offset)
+            for _ in range(5):
+                tmp |= watch & (tmp << offset)
+            legal_borad |= blank_bit & (tmp << offset)
+            tmp = watch & (my_bit >> offset)
+            for _ in range(5):
+                tmp |= watch & (tmp >> offset)
+            legal_borad |= blank_bit & (tmp >> offset)
+            return legal_borad
 
-        tmp = vertical_watch & (my_bit >> 8)
-        for _ in range(5):
-            tmp = tmp | (vertical_watch & (tmp >> 8))
-        legal_borad = legal_borad | (blank_bit & (tmp >> 8))
-        tmp = vertical_watch & (my_bit << 8)
-        for _ in range(5):
-            tmp = tmp | (vertical_watch & (tmp << 8))
-        legal_borad = legal_borad | (blank_bit & (tmp << 8))
-
-        tmp = diagonal_watch & (my_bit >> 7)
-        for _ in range(5):
-            tmp = tmp | (diagonal_watch & (tmp >> 7))
-        legal_borad = legal_borad | (blank_bit & (tmp >> 7))
-        tmp = diagonal_watch & (my_bit << 7)
-        for _ in range(5):
-            tmp = tmp | (diagonal_watch & (tmp << 7))
-        legal_borad = legal_borad | (blank_bit & (tmp << 7))
-
-        tmp = diagonal_watch & (my_bit >> 9)
-        for _ in range(5):
-            tmp = tmp | (diagonal_watch & (tmp >> 9))
-        legal_borad = legal_borad | (blank_bit & (tmp >> 9))
-        tmp = diagonal_watch & (my_bit << 9)
-        for _ in range(5):
-            tmp = tmp | (diagonal_watch & (tmp << 9))
-        legal_borad = legal_borad | (blank_bit & (tmp << 9))
+        legal_borad = update_legal_borad(legal_borad, horizontal_watch, 1) # 横方向
+        legal_borad = update_legal_borad(legal_borad, vertical_watch, 8) # 縦方向
+        legal_borad = update_legal_borad(legal_borad, diagonal_watch, 7) # 左下から右上
+        legal_borad = update_legal_borad(legal_borad, diagonal_watch, 9) # 右下から左上
 
         print_bit(legal_borad)
         return legal_borad
@@ -108,8 +91,43 @@ class Board(object):
         return not is_putable(1) and not is_putable(2)
 
     # bitの位置に color を置いた場合の Board オブジェクトを返却
-    def put_stone(self, bit, color):
-        return Board(self.black, self.white)
+    def put_stone(self, put_bit, color):
+        horizontal_mask = 0x7e7e7e7e7e7e7e7e
+        vertical_mask = 0xffffffffffffffff
+        my_bit = self.get_bit(color)
+        opp_bit = self.get_bit(color % 2 + 1)
+
+        def reverse_right(mask, offset):
+            move_tmp1 = move_tmp2 = 0x0
+            my_bit_mask = my_bit & mask
+            opp_bit_mask = opp_bit & mask
+            for _ in range(6):
+                move_tmp1 |= (m >> offset) & opp_bit
+                move_tmp2 |= (m << offset) & my_bit
+            return move_tmp1 & move_tmp2
+        def reverse_left(mask, offset):
+            move_tmp1 = move_tmp2 = 0x0
+            my_bit_mask = my_bit & mask
+            opp_bit_mask = opp_bit & mask
+            for _ in range(6):
+                move_tmp1 |= (m << offset) & opp_bit
+                move_tmp2 |= (m >> offset) & my_bit
+            return move_tmp1 & move_tmp2
+
+        move_all = 0x0
+        move_all |= reverse_right(horizontal_mask, 1)
+        move_all |= reverse_left(horizontal_mask, 1)
+        move_all |= reverse_right(horizontal_mask, 7)
+        move_all |= reverse_left(horizontal_mask, 7)
+        move_all |= reverse_right(vertical_mask, 8)
+        move_all |= reverse_left(vertical_mask, 8)
+        move_all |= reverse_right(horizontal_mask, 9)
+        move_all |= reverse_left(horizontal_mask, 9)
+
+        new_black = self.black ^ move_all
+        new_white = self.white ^ move_all
+        {1: new_black, 2:new_white}[color] |= put_bit
+        return Board(new_black, new_white)
 
 class PlayerCharacter(object):
     def __init__(self, color, borad_scores=None, weingts=[1, 1, 1]):
