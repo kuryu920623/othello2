@@ -96,18 +96,20 @@ class Board(object):
         opp_bit = self.get_bit(color % 2 + 1)
 
         def reverse_right(mask, offset):
-            move_tmp1 = move_tmp2 = 0x0
             opp_bit_mask = opp_bit & mask
-            for _ in range(6):
-                move_tmp1 |= (put_bit >> offset) & opp_bit_mask
-                move_tmp2 |= (my_bit << offset) & opp_bit_mask
+            move_tmp1 = (put_bit >> offset) & opp_bit_mask
+            move_tmp2 = (my_bit << offset) & opp_bit_mask
+            for i in range(5):
+                move_tmp1 |= (move_tmp1 >> offset) & opp_bit_mask
+                move_tmp2 |= (move_tmp2 << offset) & opp_bit_mask
             return move_tmp1 & move_tmp2
         def reverse_left(mask, offset):
-            move_tmp1 = move_tmp2 = 0x0
             opp_bit_mask = opp_bit & mask
-            for _ in range(6):
-                move_tmp1 |= (put_bit << offset) & opp_bit_mask
-                move_tmp2 |= (my_bit >> offset) & opp_bit_mask
+            move_tmp1 = (put_bit << offset) & opp_bit_mask
+            move_tmp2 = (my_bit >> offset) & opp_bit_mask
+            for i in range(5):
+                move_tmp1 |= (move_tmp1 << offset) & opp_bit_mask
+                move_tmp2 |= (move_tmp2 >> offset) & opp_bit_mask
             return move_tmp1 & move_tmp2
 
         move_all = 0x0
@@ -123,6 +125,25 @@ class Board(object):
         new_black = (self.black ^ move_all) | (put_bit * (color % 2))
         new_white = (self.white ^ move_all) | (put_bit * (color - 1))
         return Board(new_black, new_white)
+
+    def print_board(self):
+        borad = [[str(i) + str(j) for j in range(8)] for i in range(8)]
+        black = format(self.black, 'b').zfill(64)
+        white = format(self.white, 'b').zfill(64)
+        i = 0
+        for i in range(8):
+            row = []
+            for j in range(8):
+                n = i * 8 + j
+                if black[n] == '1':
+                    word = 'b '
+                elif white[n] == '1':
+                    word = 'w '
+                else:
+                    word = str(63 - n).zfill(2)
+                row.append(word)
+            print(' '.join(row))
+        print()
 
 class PlayerCharacter(object):
     def __init__(self, color, borad_scores=None, weingts=[1, 1, 1]):
@@ -150,5 +171,8 @@ class PlayerCharacter(object):
 
 b = Board()
 while True:
-    li = list(map(int, input().split(',')))
-    b = b.put_stone(li[0], li[1])
+    b.print_board()
+    li = input('pos,color >>> ').split(',')
+    pos = 2 ** int(li[0])
+    color = {'1': 1, 'b': 1, '2': 2, 'w': 2}[li[1]]
+    b = b.put_stone(pos, color)
