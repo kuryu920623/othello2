@@ -123,7 +123,7 @@ class Board(object):
         move_all |= reverse_left(horizontal_mask, 9)
 
         new_black = (self.black ^ move_all) | (put_bit * (color % 2))
-        new_white = (self.white ^ move_all) | (put_bit * ((color + 1) % 2))
+        new_white = (self.white ^ move_all) | (put_bit * (color - 1))
         print_bit(new_black)
         print_bit(new_white)
         return Board(new_black, new_white)
