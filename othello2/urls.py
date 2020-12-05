@@ -18,5 +18,6 @@ from django.urls import path, include
 from . import views
 
 urlpatterns = [
-    path('cp_turn', views.cp_turn)
+    path('pc_turn', views.pc_turn),
+    path('manual_turn', views.manual_turn),
 ]
