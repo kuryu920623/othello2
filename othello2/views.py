@@ -4,7 +4,7 @@ from operator import mul
 # 盤面情報からPCが置いた後の盤面情報と次に置ける位置を返却
 def pc_turn(request):
     b = Board()
-    b.get_putable_bit(1)
+    b.get_legal_bit(1)
     return HttpResponse('html')
 
 # 盤面情報と手動で置いた位置から、置いた後の盤面情報を返却
@@ -48,7 +48,7 @@ class Board(object):
         self.white = white
 
     # color が置ける位置のbitを取得
-    def get_putable_bit(self, color):
+    def get_legal_bit(self, color):
         legal_bit = 0x0
         blank_bit = ~(self.black | self.white)
 
@@ -79,19 +79,19 @@ class Board(object):
         return legal_bit
 
     # color が置ける位置の数を取得
-    def get_putable_count(self, color):
-        return self.count_bit(self.get_putable_bit(color))
+    def get_legal_count(self, color):
+        return cls.count_bit(self.get_legal_bit(color))
 
     # 盤面に対して color のおける場所が存在するか
-    def is_putable(self, color):
-        return bool(get_putable(color))
+    def is_legal(self, color):
+        return bool(self.get_legal_count(color))
 
     # 次の一手が何手目になるか
     def get_turn(self):
         return cls.count_bit(self.black | self.while) - 3
 
     def is_game_over(self):
-        return not is_putable(1) and not is_putable(2)
+        return not is_legal(1) and not is_legal(2)
 
     # bitの位置に color を置いた場合の Board オブジェクトを返却
     def put_stone(self, put_bit, color):
@@ -156,9 +156,23 @@ class PlayerCharacter(object):
         self.borad_scores = borad_scores
         self.weingts = weingts
 
+    def get_best_move_bit(self, board_obj, color):
+        # こんな感じの再帰関数を作る
+        scores1 = []
+        for bit1 in board_obj.get_legal_bit(color):
+            obj2 = board_obj.put_bit(bit1, color)
+            scores2 = []
+            for bit2 in obj2.get_legal_bit(color % 2 + 1):
+                obj3 = obj2.put_bit(bit, color % 2 + 1)
+                scores2.append(self.culc_borad_total_score(obj3))
+            scores1.append(max(scores2))
+
+        bit = 0x1
+        return bit
+
     def culc_borad_total_score(self, board_obj):
         bs = self.board_position_score(board_obj)
-        ps = self.putable_position_score(board_obj)
+        ps = self.legal_position_score(board_obj)
         fs = self.fixed_stone_score(board_obj)
         return sum(map(mul, self.weingts, [bs, ps, fs]))
 
@@ -167,8 +181,8 @@ class PlayerCharacter(object):
         return 1
 
     # 盤面に石を置ける位置の数の得点
-    def putable_position_score(self, board_obj):
-        my_count = board_obj.get_putable_count(self.color)
+    def legal_position_score(self, board_obj):
+        my_count = board_obj.get_legal_count(self.color)
 
     # 確定石の数の得点
     def fixed_stone_score(self, board_obj):
