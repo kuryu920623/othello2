@@ -54,7 +54,6 @@ class Board(object):
 
         my_bit = self.get_bit(color)
         opp_bit = self.get_bit(color % 2 + 1)
-        print_bit(opp_bit)
 
         horizontal_watch = opp_bit & 0x7e7e7e7e7e7e7e7e
         vertical_watch = opp_bit & 0x00ffffffffffff00
@@ -66,12 +65,10 @@ class Board(object):
             for _ in range(5):
                 tmp |= watch & (tmp << offset)
             ret |= blank_bit & (tmp << offset)
-            print_bit(ret)
             tmp = watch & (my_bit >> offset)
             for _ in range(5):
                 tmp |= watch & (tmp >> offset)
             ret |= blank_bit & (tmp >> offset)
-            print_bit(ret)
             return ret
 
         legal_bit |= update_legal_bit(horizontal_watch, 1) # 横方向
@@ -88,6 +85,10 @@ class Board(object):
     # 盤面に対して color のおける場所が存在するか
     def is_putable(self, color):
         return bool(get_putable(color))
+
+    # 次の一手が何手目になるか
+    def get_turn(self):
+        return cls.count_bit(self.black | self.while) - 3
 
     def is_game_over(self):
         return not is_putable(1) and not is_putable(2)
@@ -175,7 +176,6 @@ class PlayerCharacter(object):
 
 b = Board(0x0000000810000000, 0x0000001008000000)
 while True:
-    print_bit(b.get_putable_bit(1))
     b.print_board()
     li = input('pos,color >>> ').split(',')
     pos = 2 ** int(li[0])
