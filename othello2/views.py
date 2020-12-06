@@ -23,7 +23,7 @@ def print_bit(bit):
 class Board(object):
     # bitのビット数をカウントする。
     @classmethod
-    def count_bit(bit):
+    def count_bit(cls, bit):
         tmp = (bit & 0x5555555555555555) + (bit >> 1 & 0x5555555555555555)
         tmp = (tmp & 0x3333333333333333) + (tmp >> 2 & 0x3333333333333333)
         tmp = (tmp & 0x0f0f0f0f0f0f0f0f) + (tmp >> 4 & 0x0f0f0f0f0f0f0f0f)
@@ -33,7 +33,7 @@ class Board(object):
         return ret
 
     @classmethod
-    def board_to_bit(board_2d):
+    def board_to_bit(cls, board_2d):
         return 0x0000000810000000, 0x0000001008000000
 
     def bit_to_board(self):
@@ -43,39 +43,43 @@ class Board(object):
         return {1: self.black, 2: self.white}[color]
 
     # 盤面のbit(blackとwhite)
-    def __init__(self, black=None, white=None):
-        self.black = black or 0x0000000810000000
-        self.white = white or 0x0000001008000000
+    def __init__(self, black, white):
+        self.black = black
+        self.white = white
 
     # color が置ける位置のbitを取得
     def get_putable_bit(self, color):
-        legal_borad = 0x0000000000000000
+        legal_bit = 0x0
         blank_bit = ~(self.black | self.white)
 
         my_bit = self.get_bit(color)
         opp_bit = self.get_bit(color % 2 + 1)
+        print_bit(opp_bit)
 
         horizontal_watch = opp_bit & 0x7e7e7e7e7e7e7e7e
         vertical_watch = opp_bit & 0x00ffffffffffff00
         diagonal_watch = opp_bit & 0x007e7e7e7e7e7e00
 
-        def update_legal_borad(legal_borad, watch, offset):
+        def update_legal_bit(watch, offset):
+            ret = 0x0
             tmp = watch & (my_bit << offset)
             for _ in range(5):
                 tmp |= watch & (tmp << offset)
-            legal_borad |= blank_bit & (tmp << offset)
+            ret |= blank_bit & (tmp << offset)
+            print_bit(ret)
             tmp = watch & (my_bit >> offset)
             for _ in range(5):
                 tmp |= watch & (tmp >> offset)
-            legal_borad |= blank_bit & (tmp >> offset)
-            return legal_borad
+            ret |= blank_bit & (tmp >> offset)
+            print_bit(ret)
+            return ret
 
-        legal_borad = update_legal_borad(legal_borad, horizontal_watch, 1) # 横方向
-        legal_borad = update_legal_borad(legal_borad, vertical_watch, 8) # 縦方向
-        legal_borad = update_legal_borad(legal_borad, diagonal_watch, 7) # 左下から右上
-        legal_borad = update_legal_borad(legal_borad, diagonal_watch, 9) # 右下から左上
+        legal_bit |= update_legal_bit(horizontal_watch, 1) # 横方向
+        legal_bit |= update_legal_bit(vertical_watch, 8) # 縦方向
+        legal_bit |= update_legal_bit(diagonal_watch, 7) # 左下から右上
+        legal_bit |= update_legal_bit(diagonal_watch, 9) # 右下から左上
 
-        return legal_borad
+        return legal_bit
 
     # color が置ける位置の数を取得
     def get_putable_count(self, color):
@@ -169,8 +173,9 @@ class PlayerCharacter(object):
     def fixed_stone_score(self, board_obj):
         return 0
 
-b = Board()
+b = Board(0x0000000810000000, 0x0000001008000000)
 while True:
+    print_bit(b.get_putable_bit(1))
     b.print_board()
     li = input('pos,color >>> ').split(',')
     pos = 2 ** int(li[0])
