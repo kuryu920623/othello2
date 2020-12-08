@@ -18,7 +18,7 @@ def print_bit(bit):
         print(tmp[i*8:i*8+8])
     print()
 
-# 黒=1, 白=2
+# 黒=1, 白=-1
 
 class Board(object):
     # bitのビット数をカウントする。
@@ -45,7 +45,7 @@ class Board(object):
         return [[0] * 8] * 8
 
     def get_bit(self, color):
-        return {1: self.black, 2: self.white}[color]
+        return {1: self.black, -1: self.white}[color]
 
     # 盤面のbit(blackとwhite)
     def __init__(self, black, white):
@@ -58,7 +58,7 @@ class Board(object):
         blank_bit = ~(self.black | self.white)
 
         my_bit = self.get_bit(color)
-        opp_bit = self.get_bit(color % 2 + 1)
+        opp_bit = self.get_bit(-color)
 
         horizontal_watch = opp_bit & 0x7e7e7e7e7e7e7e7e
         vertical_watch = opp_bit & 0x00ffffffffffff00
@@ -93,17 +93,17 @@ class Board(object):
 
     # 次の一手が何手目になるか
     def get_turn(self):
-        return cls.count_bit(self.black | self.while) - 3
+        return cls.count_bit(self.black | self.white) - 3
 
     def is_game_over(self):
-        return not is_legal(1) and not is_legal(2)
+        return not is_legal(1) and not is_legal(-1)
 
     # bitの位置に color を置いた場合の Board オブジェクトを返却
     def put_stone(self, put_bit, color):
         horizontal_mask = 0x7e7e7e7e7e7e7e7e
         vertical_mask = 0xffffffffffffffff
         my_bit = self.get_bit(color)
-        opp_bit = self.get_bit(color % 2 + 1)
+        opp_bit = self.get_bit(-color)
 
         def reverse_right(mask, offset):
             opp_bit_mask = opp_bit & mask
@@ -132,8 +132,8 @@ class Board(object):
         move_all |= reverse_right(horizontal_mask, 9)
         move_all |= reverse_left(horizontal_mask, 9)
 
-        new_black = (self.black ^ move_all) | (put_bit * (color % 2))
-        new_white = (self.white ^ move_all) | (put_bit * (color - 1))
+        new_black = (self.black ^ move_all) | (put_bit * (color + 1) >> 1)
+        new_white = (self.white ^ move_all) | (put_bit * (-color + 1) >> 1)
         return Board(new_black, new_white)
 
     def print_board(self):
@@ -155,39 +155,50 @@ class Board(object):
             print(' '.join(row))
         print()
 
+
 class PlayerCharacter(object):
-    def __init__(self, color, borad_scores=None, weingts=[1, 1, 1]):
+    def __init__(self, color, borad_scores=None, weingts=[1, 1, 1], recursive_depth=6):
         self.color = color
         self.borad_scores = borad_scores
         self.weingts = weingts
+        self.recursive_depth = recursive_depth
 
-    def get_best_move_bit(self, board_obj, color):
-        # こんな感じの再帰関数を作る
+    def get_preferred_score(self, color, score1, score2):
+        return max(score1, score2) if self.color + color else min(score1, score2)
+
+    def is_iter_done(self, color, ret_score, score_upper_level):
+        return ret_score < score_upper_level if self.color + color else ret_score > score_upper_level
+
+    def get_best_move_bit(self, start_board_obj):
         move_bit = None
-        score1 = -0x1 << 20
-        for bit1 in board_obj.get_legal_bit(color):
-            obj2 = board_obj.put_bit(bit1, color)
-            score2 = 0x1 << 20
-            for bit2 in obj2.get_legal_bit(color % 2 + 1):
-                obj3 = obj2.put_bit(bit2, color % 2 + 1)
-                score3 = -0x1 << 20
-                for bit3 in obj3.get_legal_bit(color % 2 + 1):
-                    obj4 = bit3.put_bit(bit3, color % 2 + 1)
-                    score3 = max(score3, self.culc_borad_total_score(obj4))
-                score2 = min(score2, score3)
-            if score1 < score2:
-                score1 = score2
-                move_bit = bit1
+        score_top_level = -(0x1 << 20)
+        for bit_top in start_board_obj.get_legal_bit(color):
+            obj2 = start_board_obj.put_bit(bit_top, color)
+            score_bottom_level = self.recursive(obj2, -color, score_upper_level=score_top_level, depth=1)
+            if score_top_level < score_bottom_level:
+                score_top_level = score_bottom_level
+                move_bit = bit_top
         return move_bit
 
-    def recursive(self, board_obj, color, score, depth):
-        if depth > 6:
+    def recursive(self, board_obj, color, score_upper_level, depth):
+        if depth >= self.recursive_depth - 1:
             return self.culc_borad_total_score(board_obj)
-        ret_score = 0x1 << 20
-        for bit in board_obj.get_legal_bit(color):
+        legal_bits = board_obj.get_legal_bit(color)
+
+        if not legal_bits:
+            legal_bits_opp = board_obj.get_legal_bit(-color)
+            if not legal_bits_opp:
+                return (Board.count_bit(board_obj.black) - Board.count_bit(board_obj.white)) * (0x1 << 21) * self.color
+            else:
+                return recursive(next_board_obj, -color, score, depth + 1)
+
+        ret_score = -(0x1 << 20) * color * self.color
+        for bit in legal_bits:
             next_board_obj = board_obj.put_bit(bit, color)
-            score = recursive(next_board_obj, opp(color), score, depth + 1)
-            ret_score = max(ret_score, score)
+            score = recursive(next_board_obj, -color, score, depth + 1)
+            ret_score = self.get_preferred_score(color, ret_score, score)
+            if self.is_iter_done(color, ret_score, score_upper_level):
+                return ret_score
         return ret_score
 
     def culc_borad_total_score(self, board_obj):
@@ -213,5 +224,5 @@ while True:
     b.print_board()
     li = input('pos,color >>> ').split(',')
     pos = 2 ** int(li[0])
-    color = {'1': 1, 'b': 1, '2': 2, 'w': 2}[li[1]]
+    color = {'1': 1, 'b': 1, '2': -1, 'w': -1}[li[1]]
     b = b.put_stone(pos, color)
