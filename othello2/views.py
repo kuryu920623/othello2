@@ -180,7 +180,6 @@ class PlayerCharacter(object):
         score_top_level = -(0x1 << 20)
         self.count = 0
         for bit_top in Board.iter_bit(start_board_obj.get_legal_bit(self.color)):
-            print(1, self.color, bit_to_number(bit_top))
             obj2 = start_board_obj.put_stone(bit_top, self.color)
             score_bottom_level = self.recursive(obj2, -self.color, score_upper_level=score_top_level, depth=1)
             if score_top_level < score_bottom_level:
@@ -217,12 +216,11 @@ class PlayerCharacter(object):
         bs = self.board_position_score(board_obj)
         ps = self.legal_position_score(board_obj)
         fs = self.fixed_stone_score(board_obj)
-        return random.random()
         return sum(map(mul, self.weingts, [bs, ps, fs]))
 
     # 盤面の位置に対する得点
     def board_position_score(self, board_obj):
-        return 0
+        return (board_obj.get_legal_count(1) - board_obj.get_legal_count(-1)) * self.color
 
     # 盤面に石を置ける位置の数の得点
     def legal_position_score(self, board_obj):
