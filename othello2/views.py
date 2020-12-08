@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from operator import mul
+import random
 
 # 盤面情報からPCが置いた後の盤面情報と次に置ける位置を返却
 def pc_turn(request):
@@ -17,6 +18,9 @@ def print_bit(bit):
     for i in range(8):
         print(tmp[i*8:i*8+8])
     print()
+
+def bit_to_number(bit):
+    return len(format(bit, 'b')) - 1
 
 # 黒=1, 白=-1
 
@@ -83,11 +87,11 @@ class Board(object):
         legal_bit |= update_legal_bit(diagonal_watch, 7) # 左下から右上
         legal_bit |= update_legal_bit(diagonal_watch, 9) # 右下から左上
 
-        return self.iter_bit(legal_bit)
+        return legal_bit
 
     # color が置ける位置の数を取得
     def get_legal_count(self, color):
-        return cls.count_bit(self.get_legal_bit(color))
+        return self.count_bit(self.get_legal_bit(color))
 
     # 盤面に対して color のおける場所が存在するか
     def is_legal(self, color):
@@ -95,10 +99,10 @@ class Board(object):
 
     # 次の一手が何手目になるか
     def get_turn(self):
-        return cls.count_bit(self.black | self.white) - 3
+        return self.count_bit(self.black | self.white) - 3
 
     def is_game_over(self):
-        return not is_legal(1) and not is_legal(-1)
+        return not self.is_legal(1) and not self.is_legal(-1)
 
     # bitの位置に color を置いた場合の Board オブジェクトを返却
     def put_stone(self, put_bit, color):
@@ -148,9 +152,9 @@ class Board(object):
             for j in range(8):
                 n = i * 8 + j
                 if black[n] == '1':
-                    word = 'b '
+                    word = '● '
                 elif white[n] == '1':
-                    word = 'w '
+                    word = '○ '
                 else:
                     word = str(63 - n).zfill(2)
                 row.append(word)
@@ -174,16 +178,19 @@ class PlayerCharacter(object):
     def get_best_move_bit(self, start_board_obj):
         move_bit = None
         score_top_level = -(0x1 << 20)
-        for bit_top in start_board_obj.get_legal_bit(self.color):
+        self.count = 0
+        for bit_top in Board.iter_bit(start_board_obj.get_legal_bit(self.color)):
+            print(1, self.color, bit_to_number(bit_top))
             obj2 = start_board_obj.put_stone(bit_top, self.color)
             score_bottom_level = self.recursive(obj2, -self.color, score_upper_level=score_top_level, depth=1)
             if score_top_level < score_bottom_level:
                 score_top_level = score_bottom_level
                 move_bit = bit_top
+        print(self.count)
         return move_bit
 
     def recursive(self, board_obj, color, score_upper_level, depth):
-        if depth >= self.recursive_depth - 1:
+        if depth > self.recursive_depth - 1:
             return self.culc_borad_total_score(board_obj)
         legal_bits = board_obj.get_legal_bit(color)
         ret_score = -(0x1 << 20) * color * self.color
@@ -193,20 +200,24 @@ class PlayerCharacter(object):
             if not legal_bits_opp:
                 return (Board.count_bit(board_obj.black) - Board.count_bit(board_obj.white)) * (0x1 << 21) * self.color
             else:
-                return self.recursive(next_board_obj, -color, ret_score, depth + 1)
+                return self.recursive(board_obj, -color, ret_score, depth + 1)
 
-        for bit in legal_bits:
+        for bit in Board.iter_bit(legal_bits):
+            # print(depth + 1, color, bit_to_number(bit))
+            self.count += 1
             next_board_obj = board_obj.put_stone(bit, color)
             score = self.recursive(next_board_obj, -color, ret_score, depth + 1)
             ret_score = self.get_preferred_score(color, ret_score, score)
             if self.is_iter_done(color, ret_score, score_upper_level):
                 return ret_score
+
         return ret_score
 
     def culc_borad_total_score(self, board_obj):
         bs = self.board_position_score(board_obj)
         ps = self.legal_position_score(board_obj)
         fs = self.fixed_stone_score(board_obj)
+        return random.random()
         return sum(map(mul, self.weingts, [bs, ps, fs]))
 
     # 盤面の位置に対する得点
@@ -215,7 +226,7 @@ class PlayerCharacter(object):
 
     # 盤面に石を置ける位置の数の得点
     def legal_position_score(self, board_obj):
-        return 1
+        return 0
         my_count = board_obj.get_legal_count(self.color)
 
     # 確定石の数の得点
@@ -223,11 +234,19 @@ class PlayerCharacter(object):
         return 0
 
 b = Board(0x0000000810000000, 0x0000001008000000)
-p = PlayerCharacter(1)
+p = PlayerCharacter(1, recursive_depth=5)
 while True:
-    print_bit(p.get_best_move_bit(b))
+    b.print_board()
+    put = p.get_best_move_bit(b)
+    print(bit_to_number(put))
+    b = b.put_stone(put, 1)
+    if b.is_game_over():
+        break
+
     b.print_board()
     li = input('pos,color >>> ').split(',')
     pos = 2 ** int(li[0])
     color = {'1': 1, 'b': 1, '2': -1, 'w': -1}[li[1]]
     b = b.put_stone(pos, color)
+    if b.is_game_over():
+        break
