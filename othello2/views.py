@@ -83,7 +83,7 @@ class Board(object):
         legal_bit |= update_legal_bit(diagonal_watch, 7) # 左下から右上
         legal_bit |= update_legal_bit(diagonal_watch, 9) # 右下から左上
 
-        return legal_bit
+        return self.iter_bit(legal_bit)
 
     # color が置ける位置の数を取得
     def get_legal_count(self, color):
@@ -174,9 +174,9 @@ class PlayerCharacter(object):
     def get_best_move_bit(self, start_board_obj):
         move_bit = None
         score_top_level = -(0x1 << 20)
-        for bit_top in start_board_obj.get_legal_bit(color):
-            obj2 = start_board_obj.put_bit(bit_top, color)
-            score_bottom_level = self.recursive(obj2, -color, score_upper_level=score_top_level, depth=1)
+        for bit_top in start_board_obj.get_legal_bit(self.color):
+            obj2 = start_board_obj.put_stone(bit_top, self.color)
+            score_bottom_level = self.recursive(obj2, -self.color, score_upper_level=score_top_level, depth=1)
             if score_top_level < score_bottom_level:
                 score_top_level = score_bottom_level
                 move_bit = bit_top
@@ -186,18 +186,18 @@ class PlayerCharacter(object):
         if depth >= self.recursive_depth - 1:
             return self.culc_borad_total_score(board_obj)
         legal_bits = board_obj.get_legal_bit(color)
+        ret_score = -(0x1 << 20) * color * self.color
 
         if not legal_bits:
             legal_bits_opp = board_obj.get_legal_bit(-color)
             if not legal_bits_opp:
                 return (Board.count_bit(board_obj.black) - Board.count_bit(board_obj.white)) * (0x1 << 21) * self.color
             else:
-                return recursive(next_board_obj, -color, score, depth + 1)
+                return self.recursive(next_board_obj, -color, ret_score, depth + 1)
 
-        ret_score = -(0x1 << 20) * color * self.color
         for bit in legal_bits:
-            next_board_obj = board_obj.put_bit(bit, color)
-            score = recursive(next_board_obj, -color, score, depth + 1)
+            next_board_obj = board_obj.put_stone(bit, color)
+            score = self.recursive(next_board_obj, -color, ret_score, depth + 1)
             ret_score = self.get_preferred_score(color, ret_score, score)
             if self.is_iter_done(color, ret_score, score_upper_level):
                 return ret_score
@@ -223,7 +223,9 @@ class PlayerCharacter(object):
         return 0
 
 b = Board(0x0000000810000000, 0x0000001008000000)
+p = PlayerCharacter(1)
 while True:
+    print_bit(p.get_best_move_bit(b))
     b.print_board()
     li = input('pos,color >>> ').split(',')
     pos = 2 ** int(li[0])
