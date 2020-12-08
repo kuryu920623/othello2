@@ -94,7 +94,7 @@ class Board(object):
         return self.count_bit(self.get_legal_bit(color))
 
     # 盤面に対して color のおける場所が存在するか
-    def is_legal(self, color):
+    def has_legal(self, color):
         return bool(self.get_legal_count(color))
 
     # 次の一手が何手目になるか
@@ -102,7 +102,7 @@ class Board(object):
         return self.count_bit(self.black | self.white) - 3
 
     def is_game_over(self):
-        return not self.is_legal(1) and not self.is_legal(-1)
+        return not self.has_legal(1) and not self.has_legal(-1)
 
     # bitの位置に color を置いた場合の Board オブジェクトを返却
     def put_stone(self, put_bit, color):
@@ -232,21 +232,3 @@ class PlayerCharacter(object):
     # 確定石の数の得点
     def fixed_stone_score(self, board_obj):
         return 0
-
-b = Board(0x0000000810000000, 0x0000001008000000)
-p = PlayerCharacter(1, recursive_depth=5)
-while True:
-    b.print_board()
-    put = p.get_best_move_bit(b)
-    print(bit_to_number(put))
-    b = b.put_stone(put, 1)
-    if b.is_game_over():
-        break
-
-    b.print_board()
-    li = input('pos,color >>> ').split(',')
-    pos = 2 ** int(li[0])
-    color = {'1': 1, 'b': 1, '2': -1, 'w': -1}[li[1]]
-    b = b.put_stone(pos, color)
-    if b.is_game_over():
-        break
