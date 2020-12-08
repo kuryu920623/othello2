@@ -15,7 +15,7 @@ class Command(BaseCommand):
 class OneMatch(object):
     def __init__(self):
         self.board = Board(0x0000000810000000, 0x0000001008000000)
-        self.player_black = PlayerCharacter(1, recursive_depth=5)
+        self.player_black = PlayerCharacter(1, recursive_depth=6)
         self.player_white = None
 
     def start(self):
