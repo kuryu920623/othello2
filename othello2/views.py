@@ -38,8 +38,10 @@ class Board(object):
 
     # bitをイテレータにする
     @classmethod
-    def iter_bit(cls):
-        yield 0x1
+    def iter_bit(cls, bit):
+        while bit:
+            yield bit & -bit
+            bit &= bit - 1
 
     def bit_to_board(self):
         return [[0] * 8] * 8
@@ -164,10 +166,10 @@ class PlayerCharacter(object):
         self.recursive_depth = recursive_depth
 
     def get_preferred_score(self, color, score1, score2):
-        return max(score1, score2) if self.color + color else min(score1, score2)
+        return max(score1, score2) if (self.color + color) else min(score1, score2)
 
     def is_iter_done(self, color, ret_score, score_upper_level):
-        return ret_score < score_upper_level if self.color + color else ret_score > score_upper_level
+        return ret_score >= score_upper_level if (self.color + color) else ret_score <= score_upper_level
 
     def get_best_move_bit(self, start_board_obj):
         move_bit = None
@@ -213,6 +215,7 @@ class PlayerCharacter(object):
 
     # 盤面に石を置ける位置の数の得点
     def legal_position_score(self, board_obj):
+        return 1
         my_count = board_obj.get_legal_count(self.color)
 
     # 確定石の数の得点
