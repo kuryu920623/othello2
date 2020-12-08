@@ -36,6 +36,11 @@ class Board(object):
     def board_to_bit(cls, board_2d):
         return 0x0000000810000000, 0x0000001008000000
 
+    # bitをイテレータにする
+    @classmethod
+    def iter_bit(cls):
+        yield 0x1
+
     def bit_to_board(self):
         return [[0] * 8] * 8
 
@@ -158,17 +163,32 @@ class PlayerCharacter(object):
 
     def get_best_move_bit(self, board_obj, color):
         # こんな感じの再帰関数を作る
-        scores1 = []
+        move_bit = None
+        score1 = -0x1 << 20
         for bit1 in board_obj.get_legal_bit(color):
             obj2 = board_obj.put_bit(bit1, color)
-            scores2 = []
+            score2 = 0x1 << 20
             for bit2 in obj2.get_legal_bit(color % 2 + 1):
-                obj3 = obj2.put_bit(bit, color % 2 + 1)
-                scores2.append(self.culc_borad_total_score(obj3))
-            scores1.append(max(scores2))
+                obj3 = obj2.put_bit(bit2, color % 2 + 1)
+                score3 = -0x1 << 20
+                for bit3 in obj3.get_legal_bit(color % 2 + 1):
+                    obj4 = bit3.put_bit(bit3, color % 2 + 1)
+                    score3 = max(score3, self.culc_borad_total_score(obj4))
+                score2 = min(score2, score3)
+            if score1 < score2:
+                score1 = score2
+                move_bit = bit1
+        return move_bit
 
-        bit = 0x1
-        return bit
+    def recursive(self, board_obj, color, score, depth):
+        if depth > 6:
+            return self.culc_borad_total_score(board_obj)
+        ret_score = 0x1 << 20
+        for bit in board_obj.get_legal_bit(color):
+            next_board_obj = board_obj.put_bit(bit, color)
+            score = recursive(next_board_obj, opp(color), score, depth + 1)
+            ret_score = max(ret_score, score)
+        return ret_score
 
     def culc_borad_total_score(self, board_obj):
         bs = self.board_position_score(board_obj)
@@ -178,7 +198,7 @@ class PlayerCharacter(object):
 
     # 盤面の位置に対する得点
     def board_position_score(self, board_obj):
-        return 1
+        return 0
 
     # 盤面に石を置ける位置の数の得点
     def legal_position_score(self, board_obj):
