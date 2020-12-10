@@ -189,14 +189,18 @@ class PlayerCharacter(object):
         self.borad_score_dict = self.__init_borad_scores_dict()
 
     def __init_borad_scores_dict(self):
+        self.dic = {}
         for b_or_w in range(0b100000000):
             li = [single_bit for single_bit in Board.iter_bit(b_or_w)]
-            mask_range = 2 ** len(li)
+            mask_range = 1 << len(li)
             for mask in range(mask_range):
                 mask_li = bit2list(mask, len(li))
                 black = sum(map(mul, mask_li, li))
                 white = b_or_w - black
-                print(black, white)
+                index = (white << 8) | black
+                li2 = [b - w for b, w in zip(bit2list(black, 8), bit2list(white, 8))]
+                self.dic[index] = sum(map(mul, [1] * 8, li2))
+        print(self.dic)
         exit()
 
     def get_preferred_score(self, color, score1, score2):
