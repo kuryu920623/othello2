@@ -16,20 +16,18 @@ class OneMatch(object):
     def __init__(self):
         self.board = Board(0x0000000810000000, 0x0000001008000000)
         self.player_black = PlayerCharacter(1, recursive_depth=6)
-        self.player_white = None
+        self.player_white = PlayerCharacter(-1, recursive_depth=5)
 
     def start(self):
         while True:
             self.board.print_board()
-            put = self.player_black.get_best_move_bit(self.board)
-            print(self.bit_to_number(put))
-            self.board = self.board.put_stone(put, 1)
+            self.manual_turn(1)
             if self.board.is_game_over():
                 self.board.print_board()
                 break
 
             self.board.print_board()
-            self.manual_turn(-1)
+            self.pc_turn(-1)
             if self.board.is_game_over():
                 self.board.print_board()
                 break
@@ -39,13 +37,24 @@ class OneMatch(object):
             print('no available positions')
             return
         while True:
-            pos = input('white pos >>> ')
+            message = {1: 'black', -1: 'white'}[color]
+            pos = input(f'{message} pos >>> ')
             pos = 2 ** int(pos)
             if not (self.board.get_legal_bit(color) & pos):
                 print('not legal')
                 continue
             self.board = self.board.put_stone(pos, color)
             break
+
+    def pc_turn(self, color):
+        if not self.board.has_legal(color):
+            print('no available positions')
+            return
+        player = {1: self.player_black, -1: self.player_white}[color]
+        put = player.get_best_move_bit(self.board)
+        if put:
+            print(self.bit_to_number(put))
+            self.board = self.board.put_stone(put, color)
 
     # デバッグ用
     def print_bit(self, bit):

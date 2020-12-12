@@ -181,17 +181,23 @@ def bit2list(bit, length):
 
 
 class PlayerCharacter(object):
-    def __init__(self, color, borad_scores=None, weingts=[1, 10, 1], recursive_depth=6):
+    def __init__(self, color, borad_scores=None, weingts=[1, 3, 1], recursive_depth=6):
         self.color = color
-        self.borad_scores = borad_scores or [1] * 10
+        self.borad_scores = borad_scores or [24, -4, 4, 1, -8, -1, -1, 3, 1, 1]
         self.weingts = weingts
         self.recursive_depth = recursive_depth
         self.borad_score_dict = self.__init_borad_scores_dict()
 
     def __init_borad_scores_dict(self):
-        self.score_li = []
+        self.score_index = []
         for i in range(4):
-            pos_score = [1,2,3,4,5,6,7,8]
+            pos_score = [
+                [0, 1, 2, 3, 3, 2, 1, 0],
+                [1, 4, 5, 6, 6, 5, 4, 1],
+                [2, 5, 7, 8, 8, 7, 5, 2],
+                [3, 6, 8, 9, 9, 8, 6, 3],
+            ][i]
+            pos_score = [self.borad_scores[i] for i in pos_score]
             dic = {}
             for b_or_w in range(0b100000000):
                 li = [single_bit for single_bit in Board.iter_bit(b_or_w)]
@@ -202,10 +208,8 @@ class PlayerCharacter(object):
                     white = b_or_w - black
                     index = (white << 8) | black
                     li2 = [b - w for b, w in zip(bit2list(black, 8), bit2list(white, 8))]
-                    dic[index] = sum(map(mul, pos_score, li2))
-            self.score_li.append(dic)
-        print(self.score_li)
-        exit()
+                    dic[index] = sum(map(mul, pos_score, li2)) * self.color
+            self.score_index.append(dic)
 
     def get_preferred_score(self, color, score1, score2):
         return max(score1, score2) if (self.color + color) else min(score1, score2)
@@ -214,12 +218,15 @@ class PlayerCharacter(object):
         return ret_score >= score_upper_level if (self.color + color) else ret_score <= score_upper_level
 
     def get_best_move_bit(self, start_board_obj):
+        culculator = self.recursive
+        if start_board_obj.get_turn() > 50:
+            culculator = self.recursive_last
         move_bit = None
-        score_top_level = -(0x1 << 20)
+        score_top_level = -(1 << 20)
         self.count = 0
         for bit_top in Board.iter_bit(start_board_obj.get_legal_bit(self.color)):
             obj2 = start_board_obj.put_stone(bit_top, self.color)
-            score_bottom_level = self.recursive(obj2, -self.color, score_upper_level=score_top_level, depth=1)
+            score_bottom_level = culculator(obj2, -self.color, score_upper_level=score_top_level, depth=1)
             if score_top_level < score_bottom_level:
                 score_top_level = score_bottom_level
                 move_bit = bit_top
@@ -230,12 +237,12 @@ class PlayerCharacter(object):
         if depth > self.recursive_depth - 1:
             return self.culc_borad_total_score(board_obj)
         legal_bits = board_obj.get_legal_bit(color)
-        ret_score = -(0x1 << 20) * color * self.color
+        ret_score = -(1 << 20) * color * self.color
 
         if not legal_bits:
             legal_bits_opp = board_obj.get_legal_bit(-color)
             if not legal_bits_opp:
-                return (Board.count_bit(board_obj.black) - Board.count_bit(board_obj.white)) * (0x1 << 21) * self.color
+                return (Board.count_bit(board_obj.black) - Board.count_bit(board_obj.white)) * (1 << 21) * self.color
             else:
                 return self.recursive(board_obj, -color, ret_score, depth + 1)
 
@@ -250,27 +257,44 @@ class PlayerCharacter(object):
 
         return ret_score
 
+    def recursive_last(self, board_obj, color, score_upper_level, depth):
+        legal_bits = board_obj.get_legal_bit(color)
+        ret_score = -(1 << 20) * color * self.color
+        if not legal_bits:
+            legal_bits_opp = board_obj.get_legal_bit(-color)
+            if not legal_bits_opp:
+                return (Board.count_bit(board_obj.black) - Board.count_bit(board_obj.white)) * self.color
+            else:
+                return self.recursive_last(board_obj, -color, ret_score, depth)
+
+        for bit in Board.iter_bit(legal_bits):
+            self.count += 1
+            next_board_obj = board_obj.put_stone(bit, color)
+            score = self.recursive_last(next_board_obj, -color, ret_score, depth)
+            ret_score = self.get_preferred_score(color, ret_score, score)
+            if self.is_iter_done(color, ret_score, score_upper_level):
+                return ret_score
+
+        return ret_score
+
+
     def culc_borad_total_score(self, board_obj):
         bs = self.board_position_score(board_obj)
         ps = self.legal_position_score(board_obj)
         fs = self.fixed_stone_score(board_obj)
         return sum(map(mul, self.weingts, [bs, ps, fs]))
 
+    def culc_stones(self, board_obj):
+        return (count_bit(board_obj.black) - count_bit(board_obj.white)) * self.color
+
     # 盤面の位置に対する得点
     def board_position_score(self, board_obj):
-        li = [
-            (count_bit(board_obj.black & 0x8100000000000081) - count_bit(board_obj.white & 0x8100000000000081)),
-            (count_bit(board_obj.black & 0x4281000000008142) - count_bit(board_obj.white & 0x4281000000008142)),
-            (count_bit(board_obj.black & 0x2400810000810024) - count_bit(board_obj.white & 0x2400810000810024)),
-            (count_bit(board_obj.black & 0x1800008181000018) - count_bit(board_obj.white & 0x1800008181000018)),
-            (count_bit(board_obj.black & 0x0042000000004200) - count_bit(board_obj.white & 0x0042000000004200)),
-            (count_bit(board_obj.black & 0x0024420000244200) - count_bit(board_obj.white & 0x0024420000244200)),
-            (count_bit(board_obj.black & 0x0018004242001800) - count_bit(board_obj.white & 0x0018004242001800)),
-            (count_bit(board_obj.black & 0x0000240000240000) - count_bit(board_obj.white & 0x0000240000240000)),
-            (count_bit(board_obj.black & 0x0000182424180000) - count_bit(board_obj.white & 0x0000182424180000)),
-            (count_bit(board_obj.black & 0x0000001818000000) - count_bit(board_obj.white & 0x0000001818000000)),
-        ]
-        return sum(map(mul, self.borad_scores, li))
+        total = 0
+        for row in range(8):
+            mask = 0x00000000000000ff << (8 * row)
+            bit = ((board_obj.black & mask) | ((board_obj.white & mask) << 8)) >> (8 * row)
+            total += self.score_index[row if row <= 3 else 7 - row][bit]
+        return total
 
     # 盤面に石を置ける位置の数の得点
     def legal_position_score(self, board_obj):
