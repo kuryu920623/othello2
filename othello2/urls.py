@@ -17,7 +17,10 @@ from django.contrib import admin
 from django.urls import path, include
 from . import views
 
+app_name = 'othello2'
 urlpatterns = [
-    path('pc_turn', views.pc_turn),
-    path('manual_turn', views.manual_turn),
+    path('api/pc_turn', views.pc_turn),
+    path('api/manual_turn', views.manual_turn),
+    path('menu', views.menu, name='menu'),
+    path('play', views.play, name='play'),
 ]

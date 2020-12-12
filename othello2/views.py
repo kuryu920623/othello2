@@ -1,16 +1,22 @@
 from django.http import HttpResponse
+from django.shortcuts import render
 from operator import mul
 import random
 
 # 盤面情報からPCが置いた後の盤面情報と次に置ける位置を返却
 def pc_turn(request):
-    b = Board()
-    b.get_legal_bit(1)
     return HttpResponse('html')
 
 # 盤面情報と手動で置いた位置から、置いた後の盤面情報を返却
 def manual_turn(request):
     return HttpResponse('html')
+
+def menu(request):
+    return render(request, 'othello2/menu.html', {})
+
+def play(request):
+    return HttpResponse('html')
+
 
 # デバッグ用
 def print_bit(bit):

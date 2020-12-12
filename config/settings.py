@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'othello2',
+    'othello2.apps.Othello2Config',
 ]
 
 MIDDLEWARE = [
