@@ -16,8 +16,7 @@ def menu(request):
 
 def play(request):
     color = request.POST['color']
-    return HttpResponse('html')
-
+    return render(request, 'othello2/play.html', {'color': color})
 
 # デバッグ用
 def print_bit(bit):

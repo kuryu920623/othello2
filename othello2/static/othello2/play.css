@@ -1,0 +1,19 @@
+table#board {
+    background: #090;
+    border: solid 2px #000;
+    border-collapse: collapse;
+    border-spacing: 0px;
+    table-layout: fixed;
+}
+
+table#board tr td {
+    width: 40px;
+    height: 40px;
+    border:solid 1px #fff;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 200%;
+}
+table#board tr td.black {
+    
+}
