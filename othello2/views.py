@@ -15,6 +15,7 @@ def menu(request):
     return render(request, 'othello2/menu.html', {})
 
 def play(request):
+    color = request.POST['color']
     return HttpResponse('html')
 
 

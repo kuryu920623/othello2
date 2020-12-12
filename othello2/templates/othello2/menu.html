@@ -9,6 +9,21 @@
     <title>メニュー | オセロ2</title>
   </head>
   <body>
-    コンテンツ
+    <form action="{% url 'othello2:play'%}" method="post">
+      {% csrf_token %}
+      <p>
+        <label>
+          <input type="radio" name="color" id="black-turn" class="color-radio" value="black" checked>黒番で始める</button>
+        </label>
+      </p>
+      <p>
+        <label>
+          <input type="radio" name="color" id="white-turn" class="color-radio" value="white">白番で始める</button>
+        </label>
+      </p>
+      <p>
+        <button>スタート</button>
+      </p>
+    </form>
   </body>
 </html>
