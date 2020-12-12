@@ -5,7 +5,6 @@ table#board {
     border-spacing: 0px;
     table-layout: fixed;
 }
-
 table#board tr td {
     width: 40px;
     height: 40px;
@@ -14,6 +13,14 @@ table#board tr td {
     vertical-align: middle;
     font-size: 200%;
 }
+table#board tr td:hover {
+    background: #050;
+}
 table#board tr td.black {
-    
+    background: black;
+    border-radius: 40px;
+}
+table#board tr td.white {
+    background: white;
+    border-radius: 40px;
 }
