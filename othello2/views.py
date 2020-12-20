@@ -23,6 +23,7 @@ def pc_turn(request):
     ret = {
         'board': borad_obj.bit2list2D(),
         'next_color': next_color,
+        'legal': borad_obj.bit2list2D(borad_obj.get_legal_bit(next_color * -2 + 3), 0),
     }
     return HttpResponse(json.dumps(ret))
 
@@ -45,6 +46,7 @@ def manual_turn(request):
     ret = {
         'board': borad_obj.bit2list2D(),
         'next_color': next_color,
+        'legal': borad_obj.bit2list2D(borad_obj.get_legal_bit(next_color * -2 + 3), 0),
     }
     return HttpResponse(json.dumps(ret))
 

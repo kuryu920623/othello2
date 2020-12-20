@@ -13,7 +13,7 @@ table#board tr td {
     vertical-align: middle;
     font-size: 200%;
 }
-table#board tr td.blank:hover {
+table#board tr td.legal:hover {
     background: #050;
 }
 table#board tr td.black {

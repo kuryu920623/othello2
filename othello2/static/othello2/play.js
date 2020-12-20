@@ -24,7 +24,7 @@ window.addEventListener('DOMContentLoaded', function(event){
   }
 
   function manualTurn(color){
-    let blanks = $('#board tr td.blank')
+    let blanks = $('#board tr td.blank.legal')
     blanks.on('click', function(event){
       $('#board tr td').off("click");
       let position = $(event.target).data('position')
@@ -40,6 +40,7 @@ window.addEventListener('DOMContentLoaded', function(event){
         {
           data = JSON.parse(data)
           updateBoard(data['board'])
+          updateLegal(data['legal'])
           infoNextTurn = data['next_color']
           if (infoNextTurn==0){
             isGameOver = true
@@ -61,6 +62,7 @@ window.addEventListener('DOMContentLoaded', function(event){
     ).done(function(data){
       data = JSON.parse(data)
       updateBoard(data['board'])
+      updateLegal(data['legal'])
       infoNextTurn = data['next_color']
       if (infoNextTurn==0){
         isGameOver = true
@@ -86,7 +88,19 @@ window.addEventListener('DOMContentLoaded', function(event){
   }
 
   function updateLegal(legal){
-
+    let tds = $('#board tr td')
+    tds.removeClass('legal')
+    let n = 63
+    for (let row of legal){
+      for (let color of row){
+        if (color=='1'){
+          let selector = '#board [data-position="' + n + '"]'
+          let td = $(selector)
+          td.addClass('legal')
+        }
+        n -= 1
+      }
+    }
   }
 
   startTurn(infoNextTurn)
