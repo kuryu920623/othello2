@@ -6,23 +6,25 @@ table#board {
     table-layout: fixed;
 }
 table#board tr td {
+    cursor:	default;
     width: 40px;
     height: 40px;
     border:solid 1px #fff;
     text-align: center;
     vertical-align: middle;
-    font-size: 200%;
+    color: transparent;
+    font-size: 37px;
+    line-height: 0px;
 }
 table#board tr td.legal:hover {
+    cursor:	pointer;
     background: #050;
 }
 table#board tr td.black {
-    background: black;
-    border-radius: 40px;
+    color: #000;
 }
 table#board tr td.white {
-    background: white;
-    border-radius: 40px;
+    color: #fff;
 }
 
 button.back-menu {
