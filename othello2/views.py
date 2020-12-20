@@ -16,14 +16,17 @@ def pc_turn(request):
     borad_obj = borad_obj.put_stone(bit, color)
     if borad_obj.has_legal(-color):
         next_color = int((color + 3) / 2)
+        legal = borad_obj.bit2list2D(borad_obj.get_legal_bit(-color), 0)
     elif borad_obj.has_legal(color):
         next_color = int((-color + 3) / 2)
+        legal = borad_obj.bit2list2D(borad_obj.get_legal_bit(color), 0)
     else:
         next_color = 0
+        legal = [(['0'] * 8)] * 8
     ret = {
         'board': borad_obj.bit2list2D(),
         'next_color': next_color,
-        'legal': borad_obj.bit2list2D(borad_obj.get_legal_bit(next_color * -2 + 3), 0),
+        'legal': legal,
     }
     return HttpResponse(json.dumps(ret))
 
@@ -39,14 +42,17 @@ def manual_turn(request):
     borad_obj = borad_obj.put_stone(pos, color)
     if borad_obj.has_legal(-color):
         next_color = int((color + 3) / 2)
+        legal = borad_obj.bit2list2D(borad_obj.get_legal_bit(-color), 0)
     elif borad_obj.has_legal(color):
         next_color = int((-color + 3) / 2)
+        legal = borad_obj.bit2list2D(borad_obj.get_legal_bit(color), 0)
     else:
         next_color = 0
+        legal = [(['0'] * 8)] * 8
     ret = {
         'board': borad_obj.bit2list2D(),
         'next_color': next_color,
-        'legal': borad_obj.bit2list2D(borad_obj.get_legal_bit(next_color * -2 + 3), 0),
+        'legal': legal,
     }
     return HttpResponse(json.dumps(ret))
 
