@@ -39,7 +39,7 @@ window.addEventListener('DOMContentLoaded', function(event){
       ).done(function(data)
         {
           data = JSON.parse(data)
-          updateBoard(JSON.parse(data['board']))
+          updateBoard(data['board'])
           infoNextTurn = data['next_color']
           if (infoNextTurn==0){
             isGameOver = true
@@ -60,11 +60,11 @@ window.addEventListener('DOMContentLoaded', function(event){
       url, {data: params}
     ).done(function(data){
       data = JSON.parse(data)
-      updateBoard(JSON.parse(data['board']))
+      updateBoard(data['board'])
       infoNextTurn = data['next_color']
       if (infoNextTurn==0){
         isGameOver = true
-      }      
+      }
       startTurn(infoNextTurn)
     })
   }
@@ -83,6 +83,10 @@ window.addEventListener('DOMContentLoaded', function(event){
         n -= 1
       }
     }
+  }
+
+  function updateLegal(legal){
+
   }
 
   startTurn(infoNextTurn)
