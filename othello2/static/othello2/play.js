@@ -9,17 +9,29 @@ var infoBoard = [
   ['0', '0', '0', '0', '0', '0', '0', '0'],
   ['0', '0', '0', '0', '0', '0', '0', '0'],
 ]
+var isGameOver = false
 
 window.addEventListener('DOMContentLoaded', function(event){
+  function startTurn(color){
+    if (isGameOver){
+      return
+    }
+    if (infoManualColor==color){
+      manualTurn(color)
+    } else {
+      pcTurn(color)
+    }
+  }
 
-  function manualTurn(){
+  function manualTurn(color){
     let blanks = $('#board tr td.blank')
     blanks.on('click', function(event){
+      $('#board tr td').off("click");
       let position = $(event.target).data('position')
       let url = location.origin + '/othello2/api/manual_turn'
       let params = {
         'position': position,
-        'color': infoNextTurn,
+        'color': color,
         'board': JSON.stringify(infoBoard)
       }
       $.ajax(
@@ -29,13 +41,34 @@ window.addEventListener('DOMContentLoaded', function(event){
           data = JSON.parse(data)
           updateBoard(JSON.parse(data['board']))
           infoNextTurn = data['next_color']
+          if (infoNextTurn==0){
+            isGameOver = true
+          }
+          startTurn(infoNextTurn)
         }
       )
     })
   }
-  function pcTurn(){
 
+  function pcTurn(color){
+    let url = location.origin + '/othello2/api/pc_turn'
+    let params = {
+      'color': color,
+      'board': JSON.stringify(infoBoard)
+    }
+    $.ajax(
+      url, {data: params}
+    ).done(function(data){
+      data = JSON.parse(data)
+      updateBoard(JSON.parse(data['board']))
+      infoNextTurn = data['next_color']
+      if (infoNextTurn==0){
+        isGameOver = true
+      }      
+      startTurn(infoNextTurn)
+    })
   }
+
   function updateBoard(board){
     infoBoard = board
     let tds = $('#board tr td')
@@ -52,5 +85,5 @@ window.addEventListener('DOMContentLoaded', function(event){
     }
   }
 
-  manualTurn()
+  startTurn(infoNextTurn)
 });

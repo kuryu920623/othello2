@@ -6,13 +6,30 @@ import itertools
 
 # 盤面情報からPCが置いた後の盤面情報と次に置ける位置を返却
 def pc_turn(request):
-    return HttpResponse('html')
+    params = request.GET
+    color = int(params['color']) * -2 + 3
+    list2D = json.loads(params['board'])
+    black, white = Board.list2D2bit(list2D)
+    borad_obj = Board(black, white)
+    pc = PlayerCharacter(color)
+    bit = pc.get_best_move_bit(borad_obj)
+    borad_obj = borad_obj.put_stone(bit, color)
+    if borad_obj.has_legal(-color):
+        next_color = int((color + 3) / 2)
+    elif borad_obj.has_legal(color):
+        next_color = int((-color + 3) / 2)
+    else:
+        next_color = 0
+    ret = {
+        'board': json.dumps(borad_obj.bit2list2D()),
+        'next_color': next_color,
+    }
+    return HttpResponse(json.dumps(ret))
 
 # 盤面情報と手動で置いた位置から、置いた後の盤面情報を返却
 # リクエストは　1,2 だけど こっちでは 1,-1
 def manual_turn(request):
     params = request.GET
-    print(params['board'])
     color = int(params['color']) * -2 + 3
     pos = 1 << int(params['position'])
     list2D = json.loads(params['board'])
@@ -23,6 +40,8 @@ def manual_turn(request):
         next_color = int((color + 3) / 2)
     elif borad_obj.has_legal(color):
         next_color = int((-color + 3) / 2)
+    else:
+        next_color = 0
     ret = {
         'board': json.dumps(borad_obj.bit2list2D()),
         'next_color': next_color,
