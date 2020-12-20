@@ -39,8 +39,7 @@ window.addEventListener('DOMContentLoaded', function(event){
       ).done(function(data)
         {
           data = JSON.parse(data)
-          updateBoard(data['board'])
-          updateLegal(data['legal'])
+          updateBoard(data['board'], data['legal'])
           infoNextTurn = data['next_color']
           if (infoNextTurn==0){
             isGameOver = true
@@ -61,8 +60,7 @@ window.addEventListener('DOMContentLoaded', function(event){
       url, {data: params}
     ).done(function(data){
       data = JSON.parse(data)
-      updateBoard(data['board'])
-      updateLegal(data['legal'])
+      updateBoard(data['board'], data['legal'])
       infoNextTurn = data['next_color']
       if (infoNextTurn==0){
         isGameOver = true
@@ -71,36 +69,28 @@ window.addEventListener('DOMContentLoaded', function(event){
     })
   }
 
-  function updateBoard(board){
+  function updateBoard(board, legal){
     infoBoard = board
     let tds = $('#board tr td')
-    tds.removeClass('blank').removeClass('black').removeClass('white')
-    let n = 63
-    for (let row of board){
-      for (let color of row){
-        let selector = '#board [data-position="' + n + '"]'
-        let td = $(selector)
+    tds.removeClass('blank').removeClass('black').removeClass('white').removeClass('legal')
+
+    let black_count = 0, white_count = 0
+    for (let i = 0; i < 8; i++){
+      black_count += (board[i].filter(tmp => tmp=='1')).length
+      white_count += (board[i].filter(tmp => tmp=='2')).length
+      for (let j = 0; j < 8; j++){
+        let n = 63 - (i * 8 + j)
+        let td = $('#board [data-position="' + n + '"]')
+        let color = board[i][j]
         let color_str = {'0': 'blank', '1': 'black', '2': 'white'}[color]
         td.addClass(color_str)
-        n -= 1
-      }
-    }
-  }
-
-  function updateLegal(legal){
-    let tds = $('#board tr td')
-    tds.removeClass('legal')
-    let n = 63
-    for (let row of legal){
-      for (let color of row){
-        if (color=='1'){
-          let selector = '#board [data-position="' + n + '"]'
-          let td = $(selector)
+        if (legal[i][j]=='1'){
           td.addClass('legal')
         }
-        n -= 1
       }
     }
+    let message1 = '黒:' + black_count + ' / 白:' + white_count
+    $('p#message1').text(message1)
   }
 
   startTurn(infoNextTurn)

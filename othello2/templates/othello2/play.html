@@ -13,7 +13,7 @@
     </script>
   </head>
   <body>
-    <div>
+    <div align="center">
       <table id="board"><tbody>
         <tr>
           <td data-position="63" class="blank"></td>
@@ -96,6 +96,11 @@
           <td data-position="0" class="blank"></td>
         </tr>
       </tbody></table>
+      <div>
+        <p id="message1">黒:2 / 白:2</p>
+        <p id="message2">メッセージ</p>
+      </div>
+      <button class="back-menu" onclick="location.href='{% url 'othello2:menu'%}'">メニューに戻る</button>
     </div>
   </body>
 </html>

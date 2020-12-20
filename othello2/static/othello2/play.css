@@ -24,3 +24,9 @@ table#board tr td.white {
     background: white;
     border-radius: 40px;
 }
+
+button.back-menu {
+    font-size: 15px;
+    padding: 15px;
+    margin: 30px;
+}
