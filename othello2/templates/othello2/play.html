@@ -7,89 +7,93 @@
     <script type="text/javascript" src="{% static 'othello2/play.js' %}"></script>
     <script type="text/javascript" src="{% static 'utils/jquery-3.5.1.min.js' %}"></script>
     <title>play | オセロ2</title>
+    <script type="text/javascript">
+      var infoManualColor = {{color}}
+      var infoNextTurn = 1
+    </script>
   </head>
   <body>
     <div>
       <table id="board"><tbody>
         <tr>
-          <td data-position="00" class="blank"></td>
-          <td data-position="01" class="blank"></td>
-          <td data-position="02" class="blank"></td>
-          <td data-position="03" class="blank"></td>
-          <td data-position="04" class="blank"></td>
-          <td data-position="05" class="blank"></td>
-          <td data-position="06" class="blank"></td>
-          <td data-position="07" class="blank"></td>
-        </tr>
-        <tr>
-          <td data-position="10" class="blank"></td>
-          <td data-position="11" class="blank"></td>
-          <td data-position="12" class="blank"></td>
-          <td data-position="13" class="blank"></td>
-          <td data-position="14" class="blank"></td>
-          <td data-position="15" class="blank"></td>
-          <td data-position="16" class="blank"></td>
-          <td data-position="17" class="blank"></td>
-        </tr>
-        <tr>
-          <td data-position="20" class="blank"></td>
-          <td data-position="21" class="blank"></td>
-          <td data-position="22" class="blank"></td>
-          <td data-position="23" class="blank"></td>
-          <td data-position="24" class="blank"></td>
-          <td data-position="25" class="blank"></td>
-          <td data-position="26" class="blank"></td>
-          <td data-position="27" class="blank"></td>
-        </tr>
-        <tr>
-          <td data-position="30" class="blank"></td>
-          <td data-position="31" class="blank"></td>
-          <td data-position="32" class="blank"></td>
-          <td data-position="33" class="black"></td>
-          <td data-position="34" class="white"></td>
-          <td data-position="35" class="blank"></td>
-          <td data-position="36" class="blank"></td>
-          <td data-position="37" class="blank"></td>
-        </tr>
-        <tr>
-          <td data-position="40" class="blank"></td>
-          <td data-position="41" class="blank"></td>
-          <td data-position="42" class="blank"></td>
-          <td data-position="43" class="white"></td>
-          <td data-position="44" class="black"></td>
-          <td data-position="45" class="blank"></td>
-          <td data-position="46" class="blank"></td>
-          <td data-position="47" class="blank"></td>
-        </tr>
-        <tr>
-          <td data-position="50" class="blank"></td>
-          <td data-position="51" class="blank"></td>
-          <td data-position="52" class="blank"></td>
-          <td data-position="53" class="blank"></td>
-          <td data-position="54" class="blank"></td>
-          <td data-position="55" class="blank"></td>
-          <td data-position="56" class="blank"></td>
-          <td data-position="57" class="blank"></td>
-        </tr>
-        <tr>
-          <td data-position="60" class="blank"></td>
-          <td data-position="61" class="blank"></td>
-          <td data-position="62" class="blank"></td>
           <td data-position="63" class="blank"></td>
-          <td data-position="64" class="blank"></td>
-          <td data-position="65" class="blank"></td>
-          <td data-position="66" class="blank"></td>
-          <td data-position="67" class="blank"></td>
+          <td data-position="62" class="blank"></td>
+          <td data-position="61" class="blank"></td>
+          <td data-position="60" class="blank"></td>
+          <td data-position="59" class="blank"></td>
+          <td data-position="58" class="blank"></td>
+          <td data-position="57" class="blank"></td>
+          <td data-position="56" class="blank"></td>
         </tr>
         <tr>
-          <td data-position="70" class="blank"></td>
-          <td data-position="71" class="blank"></td>
-          <td data-position="72" class="blank"></td>
-          <td data-position="73" class="blank"></td>
-          <td data-position="74" class="blank"></td>
-          <td data-position="75" class="blank"></td>
-          <td data-position="76" class="blank"></td>
-          <td data-position="77" class="blank"></td>
+          <td data-position="55" class="blank"></td>
+          <td data-position="54" class="blank"></td>
+          <td data-position="53" class="blank"></td>
+          <td data-position="52" class="blank"></td>
+          <td data-position="51" class="blank"></td>
+          <td data-position="50" class="blank"></td>
+          <td data-position="49" class="blank"></td>
+          <td data-position="48" class="blank"></td>
+        </tr>
+        <tr>
+          <td data-position="47" class="blank"></td>
+          <td data-position="46" class="blank"></td>
+          <td data-position="45" class="blank"></td>
+          <td data-position="44" class="blank"></td>
+          <td data-position="43" class="blank"></td>
+          <td data-position="42" class="blank"></td>
+          <td data-position="41" class="blank"></td>
+          <td data-position="40" class="blank"></td>
+        </tr>
+        <tr>
+          <td data-position="39" class="blank"></td>
+          <td data-position="38" class="blank"></td>
+          <td data-position="37" class="blank"></td>
+          <td data-position="36" class="black"></td>
+          <td data-position="35" class="white"></td>
+          <td data-position="34" class="blank"></td>
+          <td data-position="33" class="blank"></td>
+          <td data-position="32" class="blank"></td>
+        </tr>
+        <tr>
+          <td data-position="31" class="blank"></td>
+          <td data-position="30" class="blank"></td>
+          <td data-position="29" class="blank"></td>
+          <td data-position="28" class="white"></td>
+          <td data-position="27" class="black"></td>
+          <td data-position="26" class="blank"></td>
+          <td data-position="25" class="blank"></td>
+          <td data-position="24" class="blank"></td>
+        </tr>
+        <tr>
+          <td data-position="23" class="blank"></td>
+          <td data-position="22" class="blank"></td>
+          <td data-position="21" class="blank"></td>
+          <td data-position="20" class="blank"></td>
+          <td data-position="19" class="blank"></td>
+          <td data-position="18" class="blank"></td>
+          <td data-position="17" class="blank"></td>
+          <td data-position="16" class="blank"></td>
+        </tr>
+        <tr>
+          <td data-position="15" class="blank"></td>
+          <td data-position="14" class="blank"></td>
+          <td data-position="13" class="blank"></td>
+          <td data-position="12" class="blank"></td>
+          <td data-position="11" class="blank"></td>
+          <td data-position="10" class="blank"></td>
+          <td data-position="9" class="blank"></td>
+          <td data-position="8" class="blank"></td>
+        </tr>
+        <tr>
+          <td data-position="7" class="blank"></td>
+          <td data-position="6" class="blank"></td>
+          <td data-position="5" class="blank"></td>
+          <td data-position="4" class="blank"></td>
+          <td data-position="3" class="blank"></td>
+          <td data-position="2" class="blank"></td>
+          <td data-position="1" class="blank"></td>
+          <td data-position="0" class="blank"></td>
         </tr>
       </tbody></table>
     </div>

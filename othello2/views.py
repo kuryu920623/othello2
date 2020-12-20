@@ -1,22 +1,40 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from operator import mul
-import random
+import json
+import itertools
 
 # 盤面情報からPCが置いた後の盤面情報と次に置ける位置を返却
 def pc_turn(request):
     return HttpResponse('html')
 
 # 盤面情報と手動で置いた位置から、置いた後の盤面情報を返却
+# リクエストは　1,2 だけど こっちでは 1,-1
 def manual_turn(request):
-    return HttpResponse('html')
+    params = request.GET
+    color = int(params['color']) * -2 + 3
+    pos = 1 << int(params['position'])
+    list2D = json.loads(params['board'])
+    black, white = Board.list2D2bit(list2D)
+    borad_obj = Board(black, white)
+    borad_obj = borad_obj.put_stone(pos, color)
+    if borad_obj.has_legal(-color):
+        next_color = int(color + 3 / 2)
+    elif borad_obj.has_legal(color):
+        next_color = int(-color + 3 / 2)
+    ret = {
+        'board': json.dumps(borad_obj.bit2list2D()),
+        'next_color': next_color,
+    }
+    return HttpResponse(json.dumps(ret))
 
 def menu(request):
     return render(request, 'othello2/menu.html', {})
 
 def play(request):
     color = request.POST['color']
-    return render(request, 'othello2/play.html', {'color': color})
+    num_color = {'black': 1, 'white': 2}[color]
+    return render(request, 'othello2/play.html', {'color': num_color})
 
 # デバッグ用
 def print_bit(bit):
@@ -110,6 +128,24 @@ class Board(object):
     def is_game_over(self):
         return not self.has_legal(1) and not self.has_legal(-1)
 
+    def reverse_right(self, mask, offset, my_bit, opp_bit, put_bit):
+        opp_bit_mask = opp_bit & mask
+        move_tmp1 = (put_bit >> offset) & opp_bit_mask
+        move_tmp2 = (my_bit << offset) & opp_bit_mask
+        for i in range(5):
+            move_tmp1 |= (move_tmp1 >> offset) & opp_bit_mask
+            move_tmp2 |= (move_tmp2 << offset) & opp_bit_mask
+        return move_tmp1 & move_tmp2
+
+    def reverse_left(self, mask, offset, my_bit, opp_bit, put_bit):
+        opp_bit_mask = opp_bit & mask
+        move_tmp1 = (put_bit << offset) & opp_bit_mask
+        move_tmp2 = (my_bit >> offset) & opp_bit_mask
+        for i in range(5):
+            move_tmp1 |= (move_tmp1 << offset) & opp_bit_mask
+            move_tmp2 |= (move_tmp2 >> offset) & opp_bit_mask
+        return move_tmp1 & move_tmp2
+
     # bitの位置に color を置いた場合の Board オブジェクトを返却
     def put_stone(self, put_bit, color):
         horizontal_mask = 0x7e7e7e7e7e7e7e7e
@@ -117,36 +153,40 @@ class Board(object):
         my_bit = self.get_bit(color)
         opp_bit = self.get_bit(-color)
 
-        def reverse_right(mask, offset):
-            opp_bit_mask = opp_bit & mask
-            move_tmp1 = (put_bit >> offset) & opp_bit_mask
-            move_tmp2 = (my_bit << offset) & opp_bit_mask
-            for i in range(5):
-                move_tmp1 |= (move_tmp1 >> offset) & opp_bit_mask
-                move_tmp2 |= (move_tmp2 << offset) & opp_bit_mask
-            return move_tmp1 & move_tmp2
-        def reverse_left(mask, offset):
-            opp_bit_mask = opp_bit & mask
-            move_tmp1 = (put_bit << offset) & opp_bit_mask
-            move_tmp2 = (my_bit >> offset) & opp_bit_mask
-            for i in range(5):
-                move_tmp1 |= (move_tmp1 << offset) & opp_bit_mask
-                move_tmp2 |= (move_tmp2 >> offset) & opp_bit_mask
-            return move_tmp1 & move_tmp2
-
         move_all = 0x0
-        move_all |= reverse_right(horizontal_mask, 1)
-        move_all |= reverse_left(horizontal_mask, 1)
-        move_all |= reverse_right(horizontal_mask, 7)
-        move_all |= reverse_left(horizontal_mask, 7)
-        move_all |= reverse_right(vertical_mask, 8)
-        move_all |= reverse_left(vertical_mask, 8)
-        move_all |= reverse_right(horizontal_mask, 9)
-        move_all |= reverse_left(horizontal_mask, 9)
+        move_all |= self.reverse_right(horizontal_mask, 1, my_bit, opp_bit, put_bit)
+        move_all |= self.reverse_left(horizontal_mask, 1, my_bit, opp_bit, put_bit)
+        move_all |= self.reverse_right(horizontal_mask, 7, my_bit, opp_bit, put_bit)
+        move_all |= self.reverse_left(horizontal_mask, 7, my_bit, opp_bit, put_bit)
+        move_all |= self.reverse_right(vertical_mask, 8, my_bit, opp_bit, put_bit)
+        move_all |= self.reverse_left(vertical_mask, 8, my_bit, opp_bit, put_bit)
+        move_all |= self.reverse_right(horizontal_mask, 9, my_bit, opp_bit, put_bit)
+        move_all |= self.reverse_left(horizontal_mask, 9, my_bit, opp_bit, put_bit)
 
         new_black = (self.black ^ move_all) | (put_bit * (color + 1) >> 1)
         new_white = (self.white ^ move_all) | (put_bit * (-color + 1) >> 1)
         return Board(new_black, new_white)
+
+    def bit2list2D(self, black=None, white=None):
+        # 空白:0, 黒:1, 白:2
+        black = format(black or self.black, 'b').zfill(64)
+        white = format(white or self.white, 'b').zfill(64).replace('1', '2')
+        board = []
+        for i in range(8):
+            row = []
+            for j in range(8):
+                n = i * 8 + j
+                row.append(int(black[n]) or int(white[n]) or 0)
+            board.append(row)
+        return board
+
+    @classmethod
+    def list2D2bit(self, list2D):
+        # 空白:0, 黒:1, 白:2
+        list1D = ''.join(list(itertools.chain.from_iterable(list2D)))
+        black_str = list1D.replace('2', '0')
+        white_str = list1D.replace('1', '0').replace('2', '1')
+        return int(black_str, 2), int(white_str, 2)
 
     def print_board(self):
         borad = [[str(i) + str(j) for j in range(8)] for i in range(8)]
