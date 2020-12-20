@@ -12,6 +12,7 @@ def pc_turn(request):
 # リクエストは　1,2 だけど こっちでは 1,-1
 def manual_turn(request):
     params = request.GET
+    print(params['board'])
     color = int(params['color']) * -2 + 3
     pos = 1 << int(params['position'])
     list2D = json.loads(params['board'])
@@ -19,9 +20,9 @@ def manual_turn(request):
     borad_obj = Board(black, white)
     borad_obj = borad_obj.put_stone(pos, color)
     if borad_obj.has_legal(-color):
-        next_color = int(color + 3 / 2)
+        next_color = int((color + 3) / 2)
     elif borad_obj.has_legal(color):
-        next_color = int(-color + 3 / 2)
+        next_color = int((-color + 3) / 2)
     ret = {
         'board': json.dumps(borad_obj.bit2list2D()),
         'next_color': next_color,
@@ -176,7 +177,7 @@ class Board(object):
             row = []
             for j in range(8):
                 n = i * 8 + j
-                row.append(int(black[n]) or int(white[n]) or 0)
+                row.append(str(int(black[n]) or int(white[n]) or 0))
             board.append(row)
         return board
 

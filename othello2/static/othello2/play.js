@@ -19,14 +19,16 @@ window.addEventListener('DOMContentLoaded', function(event){
       let url = location.origin + '/othello2/api/manual_turn'
       let params = {
         'position': position,
-        'color': infoManualColor,
+        'color': infoNextTurn,
         'board': JSON.stringify(infoBoard)
       }
       $.ajax(
         url, {data: params}
       ).done(function(data)
         {
-          updateBoard(JSON.parse(JSON.parse(data)['board']))
+          data = JSON.parse(data)
+          updateBoard(JSON.parse(data['board']))
+          infoNextTurn = data['next_color']
         }
       )
     })
@@ -35,12 +37,12 @@ window.addEventListener('DOMContentLoaded', function(event){
 
   }
   function updateBoard(board){
+    infoBoard = board
     let tds = $('#board tr td')
     tds.removeClass('blank').removeClass('black').removeClass('white')
     let n = 63
     for (let row of board){
       for (let color of row){
-        console.log(color)
         let selector = '#board [data-position="' + n + '"]'
         let td = $(selector)
         let color_str = {'0': 'blank', '1': 'black', '2': 'white'}[color]
