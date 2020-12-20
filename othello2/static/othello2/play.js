@@ -13,6 +13,8 @@ var isGameOver = false
 
 window.addEventListener('DOMContentLoaded', function(event){
   function startTurn(color){
+    let message2 = {1: '黒番', 2: '白番'}[infoNextTurn]
+    $('p#message2').text(message2)
     if (isGameOver){
       return
     }
@@ -89,7 +91,7 @@ window.addEventListener('DOMContentLoaded', function(event){
         }
       }
     }
-    let message1 = '黒:' + black_count + ' / 白:' + white_count
+    let message1 = '黒:' + black_count + ' | 白:' + white_count
     $('p#message1').text(message1)
   }
 
