@@ -1,3 +1,7 @@
+div.wrap-all {
+    margin: 10px;
+}
+
 table#board {
     background: #090;
     border: solid 2px #000;

@@ -3,6 +3,7 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=360,initial-scale=1">
     <link rel="stylesheet" type="text/css" href="{% static 'othello2/play.css' %}"/>
     <script type="text/javascript" src="{% static 'othello2/play.js' %}"></script>
     <script type="text/javascript" src="{% static 'utils/jquery-3.5.1.min.js' %}"></script>
@@ -13,7 +14,7 @@
     </script>
   </head>
   <body>
-    <div align="center">
+    <div align="center" class="wrap-all">
       <table id="board"><tbody>
         <tr>
           <td data-position="63" class="blank">●</td>
