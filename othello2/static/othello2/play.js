@@ -14,6 +14,11 @@ var isGameOver = false
 window.addEventListener('DOMContentLoaded', function(event){
   function startTurn(color){
     let message2 = {1: '黒番', 2: '白番'}[infoNextTurn]
+    if (infoNextTurn == infoManualColor) {
+        message2 += '(あなた)'
+    } else {
+        message2 += '(PC)'
+    }
     $('p#message2').text(message2)
     if (isGameOver){
       return
