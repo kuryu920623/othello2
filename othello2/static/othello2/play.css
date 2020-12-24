@@ -16,8 +16,12 @@ table#board tr td {
     font-size: 37px;
     line-height: 0px;
 }
-table#board tr td.legal:hover {
+table#board tr td.legal {
     cursor:	pointer;
+    color: #990;
+    font-size: 8px;
+}
+table#board tr td.legal:hover {
     background: #050;
 }
 table#board tr td.black {
