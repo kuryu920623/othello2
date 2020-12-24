@@ -304,7 +304,6 @@ class PlayerCharacter(object):
             if score_top_level < score_bottom_level:
                 score_top_level = score_bottom_level
                 move_bit = bit_top
-        print(self.count)
         return move_bit
 
     def recursive(self, board_obj, color, score_upper_level, depth):
