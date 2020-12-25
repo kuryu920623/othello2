@@ -261,6 +261,7 @@ class PlayerCharacter(object):
         self.weingts = weingts
         self.recursive_depth = recursive_depth
         self.borad_score_dict = self.__init_borad_scores_dict()
+        self.read_last_turn = 50
 
     def __init_borad_scores_dict(self):
         self.score_index = []
@@ -293,7 +294,7 @@ class PlayerCharacter(object):
 
     def get_best_move_bit(self, start_board_obj):
         culculator = self.recursive
-        if start_board_obj.get_turn() > 50:
+        if start_board_obj.get_turn() > self.read_last_turn:
             culculator = self.recursive_last
         move_bit = None
         score_top_level = -(1 << 20)
