@@ -16,25 +16,24 @@ class PlayerCharacter(PlayerCharacterBase):
 class Command(BaseCommand):
     def handle(self, *args, **options):
         for _ in range(100):
-            winner_black = PlayerCharacter(1, [100, -40, 20, 20, -60, -10, -10, 20, 10, 10], [8, 15, 0])
+            winner = [PlayerCharacter(1, [100, -40, 20, 20, -60, -10, -10, 20, 10, 10], [8, 15, 0]), None]
             for gen in range(1, 101):
-                obj = Tournament(winner_black)
+                obj = Tournament(winner[0])
                 winner = obj.match_n()
-                winner_black = winner[0]
-                winner_white = winner[1]
                 dic = {
-                    'borad_scores': ','.join(map(str, winner_black.borad_scores)),
-                    'borad_score_black': json.dumps(winner_black.score_index),
-                    'borad_score_white': json.dumps(winner_white.score_index),
-                    'weight1': winner_black.weights[0],
-                    'weight2': winner_black.weights[1],
-                    'weight3': winner_black.weights[2],
+                    'borad_scores': ','.join(map(str, winner[0].borad_scores)),
+                    'borad_score_black': json.dumps(winner[0].score_index),
+                    'borad_score_white': json.dumps(winner[1].score_index),
+                    'weight1': winner[0].weights[0],
+                    'weight2': winner[0].weights[1],
+                    'weight3': winner[0].weights[2],
                     'generation': gen,
                 }
                 for num in range(1, 11):
                     key = f'score{str(num).zfill(2)}'
-                    dic[key] = winner_black.borad_scores[num - 1]
+                    dic[key] = winner[0].borad_scores[num - 1]
                 PlayerCharacters.objects.create(**dic)
+                del obj, dic
                 # print(f'generation{str(gen).zfill(4)}', winner_black.borad_scores, winner_black.weights)
 
     def add_arguments(self, parser):
