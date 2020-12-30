@@ -2,6 +2,7 @@ from django.db import models
 
 
 class PlayerCharacters(models.Model):
+    generation = models.IntegerField('世代')
     borad_scores = models.CharField('カンマ区切りスコア', max_length=50, db_index=True)
     score01 = models.SmallIntegerField()
     score02 = models.SmallIntegerField()

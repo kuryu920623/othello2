@@ -4,6 +4,7 @@ from ...models import PlayerCharacters
 import itertools
 import random
 import json
+from django.conf import settings
 
 
 class PlayerCharacter(PlayerCharacterBase):
@@ -14,8 +15,10 @@ class PlayerCharacter(PlayerCharacterBase):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        winner_black = PlayerCharacter(1, [100, -40, 20, 20, -60, 10, 10, 10, 10, 10], [5, 15, 0])
+        gen = 1
         while True:
-            obj = Tournament()
+            obj = Tournament(winner_black)
             winner = obj.match_n()
             winner_black = winner[0]
             winner_white = winner[1]
@@ -26,11 +29,14 @@ class Command(BaseCommand):
                 'weight1': winner_black.weights[0],
                 'weight2': winner_black.weights[1],
                 'weight3': winner_black.weights[2],
+                'generation': gen,
             }
             for num in range(1, 11):
                 key = f'score{str(num).zfill(2)}'
                 dic[key] = winner_black.borad_scores[num - 1]
             PlayerCharacters.objects.create(**dic)
+            # print(f'generation{str(gen).zfill(4)}', winner_black.borad_scores, winner_black.weights)
+            gen += 1
 
     def add_arguments(self, parser):
         return
@@ -38,13 +44,19 @@ class Command(BaseCommand):
 
 
 class Tournament(object):
-    def __init__(self):
-        self.players = [self.create_player() for i in range(16)]
+    def __init__(self, base_player=None):
+        self.players = [self.create_player(base_player) for i in range(16)]
         self.remain = self.players
 
-    def create_player(self):
-        borad_scores = [random.randrange(-99, 100) for i in range(10)]
-        weights = [random.randrange(1, 11) for i in range(3)]
+    def create_player(self, base_player=None):
+        if not base_player:
+            borad_scores = [random.randrange(-99, 100) for i in range(10)]
+            weights = [random.randrange(1, 11) for i in range(3)]
+        else:
+            base_scores = base_player.borad_scores
+            borad_scores = [i + random.randrange(-5, 6) for i in base_scores]
+            base_weights = base_player.weights
+            weights = [i + random.randrange(-1, 2) for i in base_weights]
         p_black = PlayerCharacter(1, borad_scores, weights)
         p_white = PlayerCharacter(-1, borad_scores, weights)
         print(borad_scores, weights)
