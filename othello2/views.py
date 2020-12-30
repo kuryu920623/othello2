@@ -104,9 +104,6 @@ class Board(object):
             yield bit & -bit
             bit &= bit - 1
 
-    def bit_to_board(self):
-        return [[0] * 8] * 8
-
     def get_bit(self, color):
         return {1: self.black, -1: self.white}[color]
 
@@ -259,10 +256,10 @@ def bit2list(bit, length):
 
 
 class PlayerCharacter(object):
-    def __init__(self, color, borad_scores=None, weingts=[1, 3, 1], recursive_depth=6):
+    def __init__(self, color, borad_scores=None, weights=[1, 3, 1], recursive_depth=6):
         self.color = color
         self.borad_scores = borad_scores or [24, -4, 4, 1, -8, -1, -1, 3, 1, 1]
-        self.weingts = weingts
+        self.weights = weights
         self.recursive_depth = recursive_depth
         self.borad_score_dict = self.__init_borad_scores_dict()
         self.read_last_turn = 50
@@ -359,7 +356,7 @@ class PlayerCharacter(object):
         bs = self.board_position_score(board_obj)
         ps = self.legal_position_score(board_obj)
         fs = self.fixed_stone_score(board_obj)
-        return sum(map(mul, self.weingts, [bs, ps, fs]))
+        return sum(map(mul, self.weights, [bs, ps, fs]))
 
     def culc_stones(self, board_obj):
         return (count_bit(board_obj.black) - count_bit(board_obj.white)) * self.color
