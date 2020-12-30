@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from othello2.views import Board, PlayerCharacter
+from othello2.parts.main_class import Board, PlayerCharacter
 
 
 class Command(BaseCommand):
@@ -7,10 +7,6 @@ class Command(BaseCommand):
         p = PlayerCharacter(1, recursive_depth=5)
         match = OneMatch()
         match.start()
-
-    def add_arguments(self, parser):
-        return
-        parser.add_argument('params', nargs='+', type=str)
 
 
 class OneMatch(object):

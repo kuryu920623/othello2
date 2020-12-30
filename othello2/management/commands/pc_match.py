@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from othello2.views import Board, PlayerCharacter as PlayerCharacterBase
+from othello2.parts.main_class import Board, PlayerCharacter as PlayerCharacterBase
 from ...models import PlayerCharacters
 import itertools
 import random
