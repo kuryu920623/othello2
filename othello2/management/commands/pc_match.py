@@ -58,7 +58,7 @@ class Tournament(object):
             weights = [i + random.randrange(-1, 2) for i in base_weights]
         p_black = PlayerCharacter(1, borad_scores, weights)
         p_white = PlayerCharacter(-1, borad_scores, weights)
-        print(borad_scores, weights)
+        # print(borad_scores, weights)
         return [p_black, p_white]
 
     def match_n(self):
