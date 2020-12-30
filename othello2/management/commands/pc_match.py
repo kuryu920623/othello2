@@ -15,7 +15,7 @@ class PlayerCharacter(PlayerCharacterBase):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        while True:
+        for _ in range(100):
             winner_black = PlayerCharacter(1, [100, -40, 20, 20, -60, -10, -10, 20, 10, 10], [8, 15, 0])
             for gen in range(1, 101):
                 obj = Tournament(winner_black)
