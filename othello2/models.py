@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class PlayerCharacters(models.Model):
     borad_scores = models.CharField('カンマ区切りスコア', max_length=50, unique=True, db_index=True)
     score01 = models.SmallIntegerField()
@@ -12,7 +13,8 @@ class PlayerCharacters(models.Model):
     score08 = models.SmallIntegerField()
     score09 = models.SmallIntegerField()
     score10 = models.SmallIntegerField()
-    borad_score_dict = models.TextField('スコアインデックスを計算したJSON')
+    borad_score_black = models.TextField('黒のスコアインデックスを計算したJSON')
+    borad_score_white = models.TextField('白のスコアインデックスを計算したJSON')
     weight1 = models.SmallIntegerField()
     weight2 = models.SmallIntegerField()
     weight3 = models.SmallIntegerField()
