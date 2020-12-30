@@ -7,15 +7,9 @@ import json
 from django.conf import settings
 
 
-class PlayerCharacter(PlayerCharacterBase):
-    def __init__(self, color, borad_scores=None, weingts=None, recursive_depth=2):
-        super().__init__(color, borad_scores, weingts, recursive_depth)
-        self.read_last_turn = 55
-
-
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        for _ in range(100):
+        for _ in range(options['count']):
             winner = [PlayerCharacter(1, [100, -40, 20, 20, -60, -10, -10, 20, 10, 10], [8, 15, 0]), None]
             for gen in range(1, 101):
                 obj = Tournament(winner[0])
@@ -37,8 +31,14 @@ class Command(BaseCommand):
                 # print(f'generation{str(gen).zfill(4)}', winner_black.borad_scores, winner_black.weights)
 
     def add_arguments(self, parser):
-        return
-        parser.add_argument('params', nargs='+', type=str)
+        parser.add_argument('-count', dest='count', type=int, default=10)
+        return parser
+
+
+class PlayerCharacter(PlayerCharacterBase):
+    def __init__(self, color, borad_scores=None, weingts=None, recursive_depth=2):
+        super().__init__(color, borad_scores, weingts, recursive_depth)
+        self.read_last_turn = 55
 
 
 class Tournament(object):
