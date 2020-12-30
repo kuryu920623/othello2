@@ -1,6 +1,7 @@
 import itertools
 from operator import mul
 from django.conf import settings
+from .score_index import score_index as base_score_index
 
 
 class BaseTools(object):
@@ -175,6 +176,9 @@ class PlayerCharacter(BaseTools):
         self.read_last_turn = 50
 
     def __init_borad_scores_dict(self):
+        if self.borad_scores == settings.BASE_BOARD_SCORE:
+            self.score_index = base_score_index
+            return
         self.score_index = []
         for i in range(4):
             pos_score = [
