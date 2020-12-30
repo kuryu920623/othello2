@@ -4,6 +4,7 @@ from operator import mul
 import json
 import itertools
 
+
 # 盤面情報からPCが置いた後の盤面情報と次に置ける位置を返却
 def pc_turn(request):
     params = request.GET
@@ -29,6 +30,7 @@ def pc_turn(request):
         'legal': legal,
     }
     return HttpResponse(json.dumps(ret))
+
 
 # 盤面情報と手動で置いた位置から、置いた後の盤面情報を返却
 # リクエストは　1,2 だけど こっちでは 1,-1
@@ -56,8 +58,10 @@ def manual_turn(request):
     }
     return HttpResponse(json.dumps(ret))
 
+
 def menu(request):
     return render(request, 'othello2/menu.html', {})
+
 
 def play(request):
     color = request.POST['color']
@@ -75,6 +79,7 @@ def bit_to_number(bit):
     return len(format(bit, 'b')) - 1
 
 # 黒=1, 白=-1
+
 
 class Board(object):
     # bitのビット数をカウントする。
@@ -134,10 +139,10 @@ class Board(object):
             ret |= blank_bit & (tmp >> offset)
             return ret
 
-        legal_bit |= update_legal_bit(horizontal_watch, 1) # 横方向
-        legal_bit |= update_legal_bit(vertical_watch, 8) # 縦方向
-        legal_bit |= update_legal_bit(diagonal_watch, 7) # 左下から右上
-        legal_bit |= update_legal_bit(diagonal_watch, 9) # 右下から左上
+        legal_bit |= update_legal_bit(horizontal_watch, 1)  # 横方向
+        legal_bit |= update_legal_bit(vertical_watch, 8)  # 縦方向
+        legal_bit |= update_legal_bit(diagonal_watch, 7)  # 左下から右上
+        legal_bit |= update_legal_bit(diagonal_watch, 9)  # 右下から左上
 
         return legal_bit
 
@@ -217,7 +222,6 @@ class Board(object):
         return int(black_str, 2), int(white_str, 2)
 
     def print_board(self):
-        borad = [[str(i) + str(j) for j in range(8)] for i in range(8)]
         black = format(self.black, 'b').zfill(64)
         white = format(self.white, 'b').zfill(64)
         i = 0
@@ -350,7 +354,6 @@ class PlayerCharacter(object):
                 return ret_score
 
         return ret_score
-
 
     def culc_borad_total_score(self, board_obj):
         bs = self.board_position_score(board_obj)
