@@ -15,28 +15,27 @@ class PlayerCharacter(PlayerCharacterBase):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        winner_black = PlayerCharacter(1, [100, -40, 20, 20, -60, 10, 10, 10, 10, 10], [5, 15, 0])
-        gen = 1
         while True:
-            obj = Tournament(winner_black)
-            winner = obj.match_n()
-            winner_black = winner[0]
-            winner_white = winner[1]
-            dic = {
-                'borad_scores': ','.join(map(str, winner_black.borad_scores)),
-                'borad_score_black': json.dumps(winner_black.score_index),
-                'borad_score_white': json.dumps(winner_white.score_index),
-                'weight1': winner_black.weights[0],
-                'weight2': winner_black.weights[1],
-                'weight3': winner_black.weights[2],
-                'generation': gen,
-            }
-            for num in range(1, 11):
-                key = f'score{str(num).zfill(2)}'
-                dic[key] = winner_black.borad_scores[num - 1]
-            PlayerCharacters.objects.create(**dic)
-            # print(f'generation{str(gen).zfill(4)}', winner_black.borad_scores, winner_black.weights)
-            gen += 1
+            winner_black = PlayerCharacter(1, [100, -40, 20, 20, -60, -10, -10, 20, 10, 10], [8, 15, 0])
+            for gen in range(1, 101):
+                obj = Tournament(winner_black)
+                winner = obj.match_n()
+                winner_black = winner[0]
+                winner_white = winner[1]
+                dic = {
+                    'borad_scores': ','.join(map(str, winner_black.borad_scores)),
+                    'borad_score_black': json.dumps(winner_black.score_index),
+                    'borad_score_white': json.dumps(winner_white.score_index),
+                    'weight1': winner_black.weights[0],
+                    'weight2': winner_black.weights[1],
+                    'weight3': winner_black.weights[2],
+                    'generation': gen,
+                }
+                for num in range(1, 11):
+                    key = f'score{str(num).zfill(2)}'
+                    dic[key] = winner_black.borad_scores[num - 1]
+                PlayerCharacters.objects.create(**dic)
+                # print(f'generation{str(gen).zfill(4)}', winner_black.borad_scores, winner_black.weights)
 
     def add_arguments(self, parser):
         return
