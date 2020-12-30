@@ -3,6 +3,7 @@ from django.shortcuts import render
 from operator import mul
 import json
 import itertools
+from django.conf import settings
 
 
 # 盤面情報からPCが置いた後の盤面情報と次に置ける位置を返却
@@ -256,9 +257,9 @@ def bit2list(bit, length):
 
 
 class PlayerCharacter(object):
-    def __init__(self, color, borad_scores=None, weights=[1, 3, 1], recursive_depth=6):
+    def __init__(self, color, borad_scores=None, weights=settings.BASE_WEIGHTS, recursive_depth=6):
         self.color = color
-        self.borad_scores = borad_scores or [24, -4, 4, 1, -8, -1, -1, 3, 1, 1]
+        self.borad_scores = borad_scores or settings.BASE_BOARD_SCORE
         self.weights = weights
         self.recursive_depth = recursive_depth
         self.borad_score_dict = self.__init_borad_scores_dict()

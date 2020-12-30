@@ -123,3 +123,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+BASE_BOARD_SCORE = [24, -4, 4, 1, -8, -1, -1, 3, 1, 1]
+BASE_WEIGHTS = [1, 3, 1]
