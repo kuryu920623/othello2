@@ -2,6 +2,7 @@ from django.db import models
 
 
 class PlayerCharacters(models.Model):
+    process_uuid = models.CharField('UUID', max_length=50, default=None)
     generation = models.IntegerField('世代')
     borad_scores = models.CharField('カンマ区切りスコア', max_length=50, db_index=True)
     score01 = models.SmallIntegerField()
@@ -14,8 +15,8 @@ class PlayerCharacters(models.Model):
     score08 = models.SmallIntegerField()
     score09 = models.SmallIntegerField()
     score10 = models.SmallIntegerField()
-    borad_score_black = models.TextField('黒のスコアインデックスを計算したJSON')
-    borad_score_white = models.TextField('白のスコアインデックスを計算したJSON')
+    borad_score_black = models.TextField('黒のスコアインデックスを計算したJSON', default=None, null=True)
+    borad_score_white = models.TextField('白のスコアインデックスを計算したJSON', default=None, null=True)
     weight1 = models.SmallIntegerField()
     weight2 = models.SmallIntegerField()
     weight3 = models.SmallIntegerField()
@@ -23,3 +24,4 @@ class PlayerCharacters(models.Model):
     win_count = models.IntegerField('勝ち数', default=0)
     lose_count = models.IntegerField('負け数', default=0)
     total_stone = models.IntegerField('試合終了時の石の数の合計', default=0)
+    is_last_gen = models.BooleanField('最後の世代かどうか', default=False)

@@ -4,6 +4,8 @@ from ...models import PlayerCharacters
 import itertools
 import random
 import json
+import uuid
+import datetime
 from django.conf import settings
 
 
@@ -11,27 +13,37 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for _ in range(options['count']):
             winner = [PlayerCharacter(1, [100, -40, 20, 20, -60, -10, -10, 20, 10, 10], [8, 15, 0]), None]
+            process_uuid = uuid.uuid4()
+            start_date_time = datetime.datetime.now()
             for gen in range(1, 101):
                 obj = Tournament(winner[0])
                 winner = obj.match_n()
                 dic = {
                     'borad_scores': ','.join(map(str, winner[0].borad_scores)),
-                    'borad_score_black': json.dumps(winner[0].score_index),
-                    'borad_score_white': json.dumps(winner[1].score_index),
+                    # 'borad_score_black': json.dumps(winner[0].score_index),
+                    # 'borad_score_white': json.dumps(winner[1].score_index),
                     'weight1': winner[0].weights[0],
                     'weight2': winner[0].weights[1],
                     'weight3': winner[0].weights[2],
                     'generation': gen,
+                    'process_uuid': process_uuid,
                 }
                 for num in range(1, 11):
                     key = f'score{str(num).zfill(2)}'
                     dic[key] = winner[0].borad_scores[num - 1]
-                PlayerCharacters.objects.create(**dic)
-                del obj, dic
+                pc = PlayerCharacters.objects.create(**dic)
+                if (datetime.datetime.now() - start_date_time) > datetime.timedelta(minutes=options['limit']) or gen == 100:
+                    pc.is_last_gen = True
+                    pc.borad_score_black = json.dumps(winner[0].score_index)
+                    pc.borad_score_white = json.dumps(winner[1].score_index)
+                    pc.save()
+                    break
+                del obj, dic, pc
                 # print(f'generation{str(gen).zfill(4)}', winner_black.borad_scores, winner_black.weights)
 
     def add_arguments(self, parser):
         parser.add_argument('-count', dest='count', type=int, default=10)
+        parser.add_argument('-limit', dest='limit', type=int, default=30)
         return parser
 
 
