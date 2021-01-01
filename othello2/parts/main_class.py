@@ -172,10 +172,10 @@ class PlayerCharacter(BaseTools):
         self.board_scores = board_scores or settings.BASE_BOARD_SCORE
         self.weights = weights
         self.recursive_depth = recursive_depth
-        self.board_score_dict = self.__init_board_scores_dict()
+        self.board_score_dict = self.init_board_scores_dict()
         self.read_last_turn = 50
 
-    def __init_board_scores_dict(self):
+    def init_board_scores_dict(self):
         if self.board_scores == settings.BASE_BOARD_SCORE:
             if self.color == 1:
                 self.score_index = score_index_black
