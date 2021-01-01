@@ -19,9 +19,9 @@ class Command(BaseCommand):
                 obj = Tournament(winner[0])
                 winner = obj.match_n()
                 dic = {
-                    'borad_scores': ','.join(map(str, winner[0].borad_scores)),
-                    # 'borad_score_black': json.dumps(winner[0].score_index),
-                    # 'borad_score_white': json.dumps(winner[1].score_index),
+                    'board_scores': ','.join(map(str, winner[0].board_scores)),
+                    # 'board_score_black': json.dumps(winner[0].score_index),
+                    # 'board_score_white': json.dumps(winner[1].score_index),
                     'weight1': winner[0].weights[0],
                     'weight2': winner[0].weights[1],
                     'weight3': winner[0].weights[2],
@@ -30,16 +30,16 @@ class Command(BaseCommand):
                 }
                 for num in range(1, 11):
                     key = f'score{str(num).zfill(2)}'
-                    dic[key] = winner[0].borad_scores[num - 1]
+                    dic[key] = winner[0].board_scores[num - 1]
                 pc = PlayerCharacters.objects.create(**dic)
                 if (datetime.datetime.now() - start_date_time) > datetime.timedelta(minutes=options['limit']) or gen == 100:
                     pc.is_last_gen = True
-                    pc.borad_score_black = json.dumps(winner[0].score_index)
-                    pc.borad_score_white = json.dumps(winner[1].score_index)
+                    pc.board_score_black = json.dumps(winner[0].score_index)
+                    pc.board_score_white = json.dumps(winner[1].score_index)
                     pc.save()
                     break
                 del obj, dic, pc
-                # print(f'generation{str(gen).zfill(4)}', winner_black.borad_scores, winner_black.weights)
+                # print(f'generation{str(gen).zfill(4)}', winner_black.board_scores, winner_black.weights)
 
     def add_arguments(self, parser):
         parser.add_argument('-count', dest='count', type=int, default=10)
@@ -48,8 +48,8 @@ class Command(BaseCommand):
 
 
 class PlayerCharacter(PlayerCharacterBase):
-    def __init__(self, color, borad_scores=None, weingts=None, recursive_depth=2):
-        super().__init__(color, borad_scores, weingts, recursive_depth)
+    def __init__(self, color, board_scores=None, weingts=None, recursive_depth=2):
+        super().__init__(color, board_scores, weingts, recursive_depth)
         self.read_last_turn = 55
 
 
@@ -60,16 +60,16 @@ class Tournament(object):
 
     def create_player(self, base_player=None):
         if not base_player:
-            borad_scores = [random.randrange(-99, 100) for i in range(10)]
+            board_scores = [random.randrange(-99, 100) for i in range(10)]
             weights = [random.randrange(1, 11) for i in range(3)]
         else:
-            base_scores = base_player.borad_scores
-            borad_scores = [i + random.randrange(-5, 6) for i in base_scores]
+            base_scores = base_player.board_scores
+            board_scores = [i + random.randrange(-5, 6) for i in base_scores]
             base_weights = base_player.weights
             weights = [i + random.randrange(-1, 2) for i in base_weights]
-        p_black = PlayerCharacter(1, borad_scores, weights)
-        p_white = PlayerCharacter(-1, borad_scores, weights)
-        # print(borad_scores, weights)
+        p_black = PlayerCharacter(1, board_scores, weights)
+        p_white = PlayerCharacter(-1, board_scores, weights)
+        # print(board_scores, weights)
         return [p_black, p_white]
 
     def match_n(self):

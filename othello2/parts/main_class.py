@@ -167,16 +167,16 @@ class Board(BaseTools):
 
 
 class PlayerCharacter(BaseTools):
-    def __init__(self, color, borad_scores=None, weights=settings.BASE_WEIGHTS, recursive_depth=6):
+    def __init__(self, color, board_scores=None, weights=settings.BASE_WEIGHTS, recursive_depth=6):
         self.color = color
-        self.borad_scores = borad_scores or settings.BASE_BOARD_SCORE
+        self.board_scores = board_scores or settings.BASE_BOARD_SCORE
         self.weights = weights
         self.recursive_depth = recursive_depth
-        self.borad_score_dict = self.__init_borad_scores_dict()
+        self.board_score_dict = self.__init_board_scores_dict()
         self.read_last_turn = 50
 
-    def __init_borad_scores_dict(self):
-        if self.borad_scores == settings.BASE_BOARD_SCORE:
+    def __init_board_scores_dict(self):
+        if self.board_scores == settings.BASE_BOARD_SCORE:
             self.score_index = base_score_index
             return
         self.score_index = []
@@ -187,7 +187,7 @@ class PlayerCharacter(BaseTools):
                 [2, 5, 7, 8, 8, 7, 5, 2],
                 [3, 6, 8, 9, 9, 8, 6, 3],
             ][i]
-            pos_score = [self.borad_scores[i] for i in pos_score]
+            pos_score = [self.board_scores[i] for i in pos_score]
             dic = {}
             for b_or_w in range(0b100000000):
                 li = [single_bit for single_bit in self.iter_bit(b_or_w)]
@@ -224,7 +224,7 @@ class PlayerCharacter(BaseTools):
 
     def recursive(self, board_obj, color, score_upper_level, depth):
         if depth > self.recursive_depth - 1:
-            return self.culc_borad_total_score(board_obj)
+            return self.culc_board_total_score(board_obj)
         legal_bits = board_obj.get_legal_bit(color)
         ret_score = -(1 << 20) * color * self.color
 
@@ -266,7 +266,7 @@ class PlayerCharacter(BaseTools):
 
         return ret_score
 
-    def culc_borad_total_score(self, board_obj):
+    def culc_board_total_score(self, board_obj):
         bs = self.board_position_score(board_obj)
         ps = self.legal_position_score(board_obj)
         fs = self.fixed_stone_score(board_obj)

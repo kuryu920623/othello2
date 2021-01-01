@@ -10,21 +10,21 @@ def pc_turn(request):
     color = int(params['color']) * -2 + 3
     list2D = json.loads(params['board'])
     black, white = Board.list2D2bit(list2D)
-    borad_obj = Board(black, white)
+    board_obj = Board(black, white)
     pc = PlayerCharacter(color)
-    bit = pc.get_best_move_bit(borad_obj)
-    borad_obj = borad_obj.put_stone(bit, color)
-    if borad_obj.has_legal(-color):
+    bit = pc.get_best_move_bit(board_obj)
+    board_obj = board_obj.put_stone(bit, color)
+    if board_obj.has_legal(-color):
         next_color = int((color + 3) / 2)
-        legal = borad_obj.bit2list2D(borad_obj.get_legal_bit(-color), 0)
-    elif borad_obj.has_legal(color):
+        legal = board_obj.bit2list2D(board_obj.get_legal_bit(-color), 0)
+    elif board_obj.has_legal(color):
         next_color = int((-color + 3) / 2)
-        legal = borad_obj.bit2list2D(borad_obj.get_legal_bit(color), 0)
+        legal = board_obj.bit2list2D(board_obj.get_legal_bit(color), 0)
     else:
         next_color = 0
         legal = [(['0'] * 8)] * 8
     ret = {
-        'board': borad_obj.bit2list2D(),
+        'board': board_obj.bit2list2D(),
         'next_color': next_color,
         'legal': legal,
     }
@@ -39,19 +39,19 @@ def manual_turn(request):
     pos = 1 << int(params['position'])
     list2D = json.loads(params['board'])
     black, white = Board.list2D2bit(list2D)
-    borad_obj = Board(black, white)
-    borad_obj = borad_obj.put_stone(pos, color)
-    if borad_obj.has_legal(-color):
+    board_obj = Board(black, white)
+    board_obj = board_obj.put_stone(pos, color)
+    if board_obj.has_legal(-color):
         next_color = int((color + 3) / 2)
-        legal = borad_obj.bit2list2D(borad_obj.get_legal_bit(-color), 0)
-    elif borad_obj.has_legal(color):
+        legal = board_obj.bit2list2D(board_obj.get_legal_bit(-color), 0)
+    elif board_obj.has_legal(color):
         next_color = int((-color + 3) / 2)
-        legal = borad_obj.bit2list2D(borad_obj.get_legal_bit(color), 0)
+        legal = board_obj.bit2list2D(board_obj.get_legal_bit(color), 0)
     else:
         next_color = 0
         legal = [(['0'] * 8)] * 8
     ret = {
-        'board': borad_obj.bit2list2D(),
+        'board': board_obj.bit2list2D(),
         'next_color': next_color,
         'legal': legal,
     }
