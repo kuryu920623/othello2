@@ -1,7 +1,7 @@
 import itertools
 from operator import mul
 from django.conf import settings
-from .score_index import score_index as base_score_index
+from .score_index import score_index_black, score_index_white
 
 
 class BaseTools(object):
@@ -177,7 +177,10 @@ class PlayerCharacter(BaseTools):
 
     def __init_board_scores_dict(self):
         if self.board_scores == settings.BASE_BOARD_SCORE:
-            self.score_index = base_score_index
+            if self.color == 1:
+                self.score_index = score_index_black
+            else:
+                self.score_index = score_index_white
             return
         self.score_index = []
         for i in range(4):
