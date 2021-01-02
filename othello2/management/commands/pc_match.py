@@ -11,11 +11,12 @@ from django.conf import settings
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        max_generation = 100
         for _ in range(options['count']):
             winner = [PlayerCharacter(1, [100, -40, 20, 20, -60, -10, -10, 20, 10, 10], [8, 15, 0]), None]
             process_uuid = uuid.uuid4()
             start_date_time = datetime.datetime.now()
-            for gen in range(1, 101):
+            for gen in range(1, max_generation + 1):
                 obj = Tournament(winner[0])
                 winner = obj.match_n()
                 dic = {
@@ -32,7 +33,7 @@ class Command(BaseCommand):
                     key = f'score{str(num).zfill(2)}'
                     dic[key] = winner[0].board_scores[num - 1]
                 pc = PlayerCharacters.objects.create(**dic)
-                if (datetime.datetime.now() - start_date_time) > datetime.timedelta(minutes=options['limit']) or gen == 100:
+                if (datetime.datetime.now() - start_date_time) > datetime.timedelta(minutes=options['limit']) or gen == max_generation:
                     pc.is_last_gen = True
                     pc.board_score_black = json.dumps(winner[0].score_index)
                     pc.board_score_white = json.dumps(winner[1].score_index)

@@ -4,7 +4,6 @@ from othello2.parts.main_class import Board, PlayerCharacter
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        p = PlayerCharacter(1, recursive_depth=5)
         match = OneMatch()
         match.start()
 
