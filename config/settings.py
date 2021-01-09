@@ -124,5 +124,5 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-BASE_BOARD_SCORE = [24, -4, 4, 1, -8, -1, -1, 3, 1, 1]
-BASE_WEIGHTS = [1, 3, 1]
+BASE_BOARD_SCORE = [144, -54, 7, 17, -34, -25, -20, -19, -1, -9]
+BASE_WEIGHTS = [5, 15, 1]

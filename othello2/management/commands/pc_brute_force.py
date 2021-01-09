@@ -3,6 +3,7 @@ from othello2.parts.main_class import Board, PlayerCharacter as PlayerCharacterB
 from ...models import PlayerCharacters
 import itertools
 import json
+import gc
 
 
 class Command(BaseCommand):
@@ -45,16 +46,18 @@ class BruteForce(object):
 
     def start(self):
         for _black, _white in itertools.permutations(self.players, 2):
-            black = _black[1]
-            white = _white[2]
-            match_obj = PCOneMatch(black, white)
+            match_obj = PCOneMatch(_black[1], _white[2])
             win = match_obj.match()
             _black[0].match_count += 1
             _white[0].match_count += 1
             [_black, _white][win][0].win_count += 1
             [_black, _white][(win + 1) % 2][0].lose_count += 1
+            _black[0].total_stone += match_obj.black_stone_count
+            _white[0].total_stone += match_obj.black_stone_count
             _black[0].save()
             _white[0].save()
+            del match_obj, _black, _white
+            gc.collect()
 
 
 class PCOneMatch(object):
@@ -67,9 +70,9 @@ class PCOneMatch(object):
             self.pc_turn(color)
             if self.board.is_game_over():
                 break
-        black_count = self.board.count_bit(self.board.black)
-        white_count = self.board.count_bit(self.board.white)
-        if black_count > white_count:
+        self.black_stone_count = self.board.count_bit(self.board.black)
+        self.white_stone_count = self.board.count_bit(self.board.white)
+        if self.black_stone_count > self.white_stone_count:
             return 0
         else:
             return 1
