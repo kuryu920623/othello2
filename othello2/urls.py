@@ -15,11 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.decorators.cache import cache_page
 from . import views
 
 app_name = 'othello2'
 urlpatterns = [
-    path('api/pc_turn', views.pc_turn),
+    path('api/pc_turn', cache_page(60*60*24*365)(views.pc_turn)),
     path('api/manual_turn', views.manual_turn),
     path('menu', views.menu, name='menu'),
     path('play', views.play, name='play'),
